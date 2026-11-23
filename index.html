@@ -429,6 +429,108 @@
       font-variant-numeric: tabular-nums;
     }
 
+    .dual-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .floor-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .floor-toolbar-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .mini-chip-group {
+      display: flex;
+      gap: 3px;
+    }
+
+    .mini-chip {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #475569;
+      border-radius: 5px;
+      padding: 2px 5px;
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .mini-chip:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .floor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    .floor-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 4px 7px;
+    }
+
+    .floor-item-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      white-space: nowrap;
+    }
+
+    .floor-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .floor-input {
+      width: 56px;
+      padding: 2px 4px;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--primary);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      background: #f8fafc;
+    }
+    .floor-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #ffffff;
+    }
+
+    .floor-unit {
+      font-size: 10.5px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .ins-elev {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: -4px;
+    }
+
     /* Inspector Card */
     .inspector-box {
       background: #f8fafc;
@@ -666,37 +768,10 @@
 
         <div class="control-row">
           <div class="control-header">
-            <span>남측 교사동 높이 (H)</span>
-            <span class="control-val" id="val-hs">14.0 m</span>
-          </div>
-          <input type="range" id="slider-hs" min="7" max="24" step="0.5" value="14" />
-        </div>
-
-        <div class="control-row">
-          <div class="control-header">
             <span>교사동 간 인동거리 (D)</span>
             <span class="control-val" id="val-d">22.0 m</span>
           </div>
           <input type="range" id="slider-d" min="10" max="45" step="0.5" value="22" />
-        </div>
-
-        <div class="control-row">
-          <div class="control-header">
-            <span>남측 교사동 길이 (Ws)</span>
-            <span class="control-val" id="val-ws">48 m</span>
-          </div>
-          <input type="range" id="slider-ws" min="16" max="80" step="4" value="48" />
-        </div>
-
-        <div class="control-row">
-          <div class="control-header">
-            <span>북측 교사동 층수 / 길이</span>
-            <span class="control-val" id="val-north">4층 / 48 m</span>
-          </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-            <input type="range" id="slider-nf" min="2" max="5" step="1" value="4" title="북측 동 층수" />
-            <input type="range" id="slider-wn" min="24" max="72" step="8" value="48" title="북측 동 길이" />
-          </div>
         </div>
 
         <div class="control-row">
@@ -710,6 +785,74 @@
             <button class="seg-btn active" data-th="0">정남 0°</button>
             <button class="seg-btn" data-th="30">남서 +30°</button>
           </div>
+        </div>
+
+        <!-- South Building Floor & Height Config -->
+        <div class="sub-box">
+          <div class="sub-box-header">
+            <span>남측 교사동 (음영 유발)</span>
+            <span class="sub-box-meta" id="val-south-summary">4층 · 총 H 14.0m</span>
+          </div>
+          <div class="dual-controls">
+            <div class="control-row">
+              <div class="control-header">
+                <span>층수</span>
+                <span class="control-val" id="val-sf">4층</span>
+              </div>
+              <input type="range" id="slider-sf" min="1" max="6" step="1" value="4" />
+            </div>
+            <div class="control-row">
+              <div class="control-header">
+                <span>길이 (Ws)</span>
+                <span class="control-val" id="val-ws">48 m</span>
+              </div>
+              <input type="range" id="slider-ws" min="16" max="80" step="4" value="48" />
+            </div>
+          </div>
+          <div class="floor-toolbar">
+            <span class="floor-toolbar-label">층별 층고 (2.5~8.0m)</span>
+            <div class="mini-chip-group" id="south-uniform-chips" title="남측 동 전 층 층고 일괄 적용">
+              <button class="mini-chip" data-h="3.3">3.3</button>
+              <button class="mini-chip" data-h="3.5">3.5</button>
+              <button class="mini-chip" data-h="3.6">3.6</button>
+              <button class="mini-chip" data-h="4.0">4.0</button>
+            </div>
+          </div>
+          <div class="floor-grid" id="south-floors-grid"></div>
+        </div>
+
+        <!-- North Building Floor & Height Config -->
+        <div class="sub-box">
+          <div class="sub-box-header">
+            <span>북측 교사동 (일조 평가)</span>
+            <span class="sub-box-meta" id="val-north-summary">4층 · 총 H 14.0m</span>
+          </div>
+          <div class="dual-controls">
+            <div class="control-row">
+              <div class="control-header">
+                <span>층수</span>
+                <span class="control-val" id="val-nf">4층</span>
+              </div>
+              <input type="range" id="slider-nf" min="1" max="6" step="1" value="4" />
+            </div>
+            <div class="control-row">
+              <div class="control-header">
+                <span>길이 (Wn)</span>
+                <span class="control-val" id="val-wn">48 m</span>
+              </div>
+              <input type="range" id="slider-wn" min="24" max="72" step="8" value="48" />
+            </div>
+          </div>
+          <div class="floor-toolbar">
+            <span class="floor-toolbar-label">층별 층고 (2.5~8.0m)</span>
+            <div class="mini-chip-group" id="north-uniform-chips" title="북측 동 전 층 층고 일괄 적용">
+              <button class="mini-chip" data-h="3.3">3.3</button>
+              <button class="mini-chip" data-h="3.5">3.5</button>
+              <button class="mini-chip" data-h="3.6">3.6</button>
+              <button class="mini-chip" data-h="4.0">4.0</button>
+            </div>
+          </div>
+          <div class="floor-grid" id="north-floors-grid"></div>
         </div>
 
         <div class="sub-box" id="window-controls-box">
@@ -771,6 +914,7 @@
             <span id="ins-name">지점을 클릭하세요</span>
             <span class="pill-status pill-ex" id="ins-badge">미선택</span>
           </div>
+          <div class="ins-elev" id="ins-elev">-</div>
           <div class="mini-stats">
             <div class="mini-stat">
               <div class="mini-stat-label">총 일조시간 (08~16시)</div>
@@ -796,7 +940,7 @@
       <div class="disclaimer">
         <strong>법적 근거 및 유의사항</strong><br/>
         • 「교육환경 보호에 관한 법률」 시행규칙 [별표 1] 및 「교육환경평가서 작성 등에 관한 고시」(교육부고시 제2019-176호) [별표 2] 기준을 반영한 사전 개략 검토 도구입니다.<br/>
-        • 교사 층고 3.5m, <span id="disc-win-spec">창문 5.2×1.8m(창대 0.9m, 중심 +1.80m)</span>, 동 깊이 12m 기준이며, 실제 교육환경평가 심의 시에는 주변 건축물·지형 고저차·실제 입면 개구부를 반영한 정밀 3D 해석이 필요합니다.
+        • <span id="disc-bldg-spec">남측 4층(14.0m) · 북측 4층(14.0m)</span>, <span id="disc-win-spec">창문 5.2×1.8m(창대 0.9m, 중심 +1.80m)</span>, 동 깊이 12m 기준이며, 실제 교육환경평가 심의 시에는 주변 건축물·지형 고저차·실제 입면 개구부를 반영한 정밀 3D 해석이 필요합니다.
       </div>
     </aside>
   </div>
@@ -811,8 +955,11 @@
     const DEG2RAD = Math.PI / 180;
     const RAD2DEG = 180 / Math.PI;
     const DECLINATION = -23.44 * DEG2RAD; // Winter Solstice
-    const FLOOR_H = 3.5;
-    const WINDOW_CENTER_OFFSET = 1.8;
+    const DEFAULT_FLOOR_H = 3.5;
+    const MIN_FLOOR_H = 2.5;
+    const MAX_FLOOR_H = 8.0;
+    const MIN_FLOORS = 1;
+    const MAX_FLOORS = 6;
     const BLDG_DEPTH = 12.0;
     const BAY_WIDTH = 8.0;
 
@@ -833,10 +980,12 @@
       lat: 37.5,
       lon: 127.0,
       timeMode: 'solar', // 'solar' | 'kst'
-      hs: 14.0,
+      sf: 4,
+      sFloors: [3.5, 3.5, 3.5, 3.5],
       ws: 48.0,
       d: 22.0,
       nf: 4,
+      nFloors: [3.5, 3.5, 3.5, 3.5],
       wn: 48.0,
       theta: 0,          // degrees: -30 SE, 0 S, +30 SW
       winW: 5.2,         // window width (m)
@@ -853,16 +1002,86 @@
     let currentResults = [];
     let clickableMeshes = [];
 
+    // ---------- Building Floor Helpers ----------
+    function getSouthHeight() {
+      return round1(state.sFloors.reduce((acc, h) => acc + h, 0));
+    }
+
+    function getNorthHeight() {
+      return round1(state.nFloors.reduce((acc, h) => acc + h, 0));
+    }
+
+    function getCumulativeBases(floors) {
+      const bases = [0];
+      let sum = 0;
+      for (let i = 0; i < floors.length; i++) {
+        sum = round1(sum + floors[i]);
+        bases.push(sum);
+      }
+      return bases; // length = floors.length + 1
+    }
+
+    function resizeFloors(arr, targetCount) {
+      const count = clamp(Math.round(targetCount), MIN_FLOORS, MAX_FLOORS);
+      const next = arr.slice(0, count);
+      const fillVal = next.length > 0 ? next[next.length - 1] : DEFAULT_FLOOR_H;
+      while (next.length < count) next.push(fillVal);
+      return next;
+    }
+
+    function getEffectiveWindowForFloor(floorHeight) {
+      const maxTop = Math.max(0.7, floorHeight - 0.1);
+      let h = Math.min(state.winH, maxTop);
+      let sill = state.winSill;
+      if (sill + h > maxTop) {
+        sill = Math.max(0.0, maxTop - h);
+      }
+      return {
+        w: state.winW,
+        h: round1(h),
+        sill: round1(sill),
+        centerOffset: sill + h / 2
+      };
+    }
+
     // ---------- Parse URL Query Params ----------
     function loadFromURL() {
       const p = new URLSearchParams(window.location.search);
       if (p.has('md') && ['classroom', 'field'].includes(p.get('md'))) state.mode = p.get('md');
       if (p.has('lv') && LEVEL_RULES[p.get('lv')]) state.level = p.get('lv');
       if (p.has('tm') && ['solar', 'kst'].includes(p.get('tm'))) state.timeMode = p.get('tm');
-      if (p.has('hs')) state.hs = clamp(parseFloat(p.get('hs')), 7, 24);
+
+      if (p.has('sf')) {
+        state.sf = clamp(parseInt(p.get('sf'), 10), MIN_FLOORS, MAX_FLOORS);
+        state.sFloors = resizeFloors(state.sFloors, state.sf);
+      }
+      if (p.has('sh')) {
+        const parsed = p.get('sh').split(',').map(v => round1(clamp(parseFloat(v), MIN_FLOOR_H, MAX_FLOOR_H))).filter(v => !Number.isNaN(v));
+        if (parsed.length >= MIN_FLOORS) {
+          state.sf = clamp(parsed.length, MIN_FLOORS, MAX_FLOORS);
+          state.sFloors = parsed.slice(0, state.sf);
+        }
+      } else if (p.has('hs')) {
+        // Backward compatibility with legacy total height URL parameter
+        const hsVal = clamp(parseFloat(p.get('hs')), 5, 36);
+        const avg = round1(clamp(hsVal / state.sf, MIN_FLOOR_H, MAX_FLOOR_H));
+        state.sFloors = Array(state.sf).fill(avg);
+      }
+
+      if (p.has('nf')) {
+        state.nf = clamp(parseInt(p.get('nf'), 10), MIN_FLOORS, MAX_FLOORS);
+        state.nFloors = resizeFloors(state.nFloors, state.nf);
+      }
+      if (p.has('nh')) {
+        const parsed = p.get('nh').split(',').map(v => round1(clamp(parseFloat(v), MIN_FLOOR_H, MAX_FLOOR_H))).filter(v => !Number.isNaN(v));
+        if (parsed.length >= MIN_FLOORS) {
+          state.nf = clamp(parsed.length, MIN_FLOORS, MAX_FLOORS);
+          state.nFloors = parsed.slice(0, state.nf);
+        }
+      }
+
       if (p.has('ws')) state.ws = clamp(parseFloat(p.get('ws')), 16, 80);
       if (p.has('d'))  state.d  = clamp(parseFloat(p.get('d')), 10, 45);
-      if (p.has('nf')) state.nf = clamp(parseInt(p.get('nf'), 10), 2, 5);
       if (p.has('wn')) state.wn = clamp(parseFloat(p.get('wn')), 24, 72);
       if (p.has('th')) state.theta = clamp(parseFloat(p.get('th')), -45, 45);
       if (p.has('ex1')) state.ex1 = p.get('ex1') === '1';
@@ -883,10 +1102,12 @@
       p.set('md', state.mode);
       p.set('lv', state.level);
       p.set('tm', state.timeMode);
-      p.set('hs', state.hs);
+      p.set('sf', state.sf);
+      p.set('sh', state.sFloors.map(h => h.toFixed(1)).join(','));
       p.set('ws', state.ws);
       p.set('d', state.d);
       p.set('nf', state.nf);
+      p.set('nh', state.nFloors.map(h => h.toFixed(1)).join(','));
       p.set('wn', state.wn);
       p.set('th', state.theta);
       p.set('ex1', state.ex1 ? '1' : '0');
@@ -911,20 +1132,21 @@
     }
 
     function enforceWindowBounds(changedField) {
-      const maxTop = FLOOR_H - 0.1; // 3.4m ceiling limit
+      const minFloorH = Math.min(...state.nFloors);
+      const maxTop = Math.max(0.8, minFloorH - 0.1);
       state.winW = round1(clamp(state.winW, 1.0, BAY_WIDTH - 0.4));
-      state.winH = round1(clamp(state.winH, 0.6, 3.0));
+      state.winH = round1(clamp(state.winH, 0.6, Math.min(3.0, maxTop)));
       state.winSill = round1(clamp(state.winSill, 0.0, 2.4));
       if (state.winSill + state.winH > maxTop) {
         if (changedField === 'winSill') {
           state.winH = round1(Math.max(0.6, maxTop - state.winSill));
           if (state.winSill + state.winH > maxTop) {
-            state.winSill = round1(maxTop - state.winH);
+            state.winSill = round1(Math.max(0.0, maxTop - state.winH));
           }
         } else {
           state.winSill = round1(Math.max(0.0, maxTop - state.winH));
           if (state.winSill + state.winH > maxTop) {
-            state.winH = round1(maxTop - state.winSill);
+            state.winH = round1(Math.max(0.6, maxTop - state.winSill));
           }
         }
       }
@@ -1012,12 +1234,13 @@
         sunSteps[i] = { h, sl };
       }
 
+      const hs = getSouthHeight();
+      const hn = getNorthHeight();
       const southBox = {
         minX: -state.ws / 2, maxX: state.ws / 2,
-        minY: 0,             maxY: state.hs,
+        minY: 0,             maxY: hs,
         minZ: state.d / 2,   maxZ: state.d / 2 + BLDG_DEPTH
       };
-      const hn = state.nf * FLOOR_H;
       const northBox = {
         minX: -state.wn / 2,            maxX: state.wn / 2,
         minY: 0,                        maxY: hn,
@@ -1031,12 +1254,16 @@
 
       if (state.mode === 'classroom') {
         const cols = Math.round(state.wn / BAY_WIDTH);
-        const winCenterOffset = state.winSill + state.winH / 2;
-        const dxOff = state.winW * 0.35;
-        const dyOff = state.winH * 0.35;
+        const nBases = getCumulativeBases(state.nFloors);
 
         for (let f = 1; f <= state.nf; f++) {
-          const y = (f - 1) * FLOOR_H + winCenterOffset;
+          const floorBaseY = nBases[f - 1];
+          const floorH = state.nFloors[f - 1];
+          const effWin = getEffectiveWindowForFloor(floorH);
+          const y = floorBaseY + effWin.centerOffset;
+          const dxOff = effWin.w * 0.35;
+          const dyOff = effWin.h * 0.35;
+
           for (let c = 0; c < cols; c++) {
             const x = -state.wn / 2 + (c + 0.5) * BAY_WIDTH;
             const z = -state.d / 2 + 0.05;
@@ -1097,8 +1324,11 @@
 
             results.push({
               id, label, floor: f, col: c + 1,
-              x, y, z, w: state.winW, h: state.winH,
-              winCenterY: winCenterOffset,
+              floorH, floorBaseY,
+              x, y, z, w: effWin.w, h: effWin.h,
+              sill: effWin.sill,
+              winCenterY: effWin.centerOffset,
+              glCenterY: y,
               totalHrs, contHrs, pass, excluded, timeline
             });
           }
@@ -1202,8 +1432,8 @@
     sunLight.shadow.mapSize.width = 2048;
     sunLight.shadow.mapSize.height = 2048;
     sunLight.shadow.camera.near = 10;
-    sunLight.shadow.camera.far = 260;
-    const sc = 85;
+    sunLight.shadow.camera.far = 320;
+    const sc = 110;
     sunLight.shadow.camera.left = -sc;
     sunLight.shadow.camera.right = sc;
     sunLight.shadow.camera.top = sc;
@@ -1345,55 +1575,68 @@
       // Rotate campus so theta=-30 (SE) rotates +30° around Y
       campusGroup.rotation.y = -state.theta * DEG2RAD;
 
-      const hn = state.nf * FLOOR_H;
+      const hs = getSouthHeight();
+      const hn = getNorthHeight();
+      const sBases = getCumulativeBases(state.sFloors);
+      const nBases = getCumulativeBases(state.nFloors);
 
       // Materials
       const southMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.72, metalness: 0.05 });
       const northMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.65, metalness: 0.02 });
       const edgeMat  = new THREE.LineBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.45 });
 
+      // Helper to add perimeter floor slab lines around a building box
+      function addFloorSlabLines(width, zCenter, bases, colorHex) {
+        const halfW = width / 2 + 0.03;
+        const zFront = zCenter + BLDG_DEPTH / 2 + 0.03;
+        const zBack  = zCenter - BLDG_DEPTH / 2 - 0.03;
+        const mat = new THREE.LineBasicMaterial({ color: colorHex });
+        for (let f = 1; f < bases.length - 1; f++) {
+          const ly = bases[f];
+          const pts = [
+            new THREE.Vector3(-halfW, ly, zBack),
+            new THREE.Vector3( halfW, ly, zBack),
+            new THREE.Vector3( halfW, ly, zFront),
+            new THREE.Vector3(-halfW, ly, zFront),
+            new THREE.Vector3(-halfW, ly, zBack)
+          ];
+          campusGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat));
+        }
+      }
+
       // South Building (Shadow Caster)
-      const sGeo = new THREE.BoxGeometry(state.ws, state.hs, BLDG_DEPTH);
+      const sZCenter = state.d / 2 + BLDG_DEPTH / 2;
+      const sGeo = new THREE.BoxGeometry(state.ws, hs, BLDG_DEPTH);
       const sMesh = new THREE.Mesh(sGeo, southMat);
-      sMesh.position.set(0, state.hs / 2, state.d / 2 + BLDG_DEPTH / 2);
+      sMesh.position.set(0, hs / 2, sZCenter);
       sMesh.castShadow = true;
       sMesh.receiveShadow = true;
       campusGroup.add(sMesh);
       const sEdge = new THREE.LineSegments(new THREE.EdgesGeometry(sGeo), edgeMat);
       sEdge.position.copy(sMesh.position);
       campusGroup.add(sEdge);
+      addFloorSlabLines(state.ws, sZCenter, sBases, 0x64748b);
 
-      const sLabel = createTextSprite(`남측 교사동 (H=${state.hs}m)`, 'rgba(51,65,85,0.88)', '#ffffff', 0.85);
-      sLabel.position.set(0, state.hs + 3.2, state.d / 2 + BLDG_DEPTH / 2);
+      const sLabel = createTextSprite(`남측 교사동 (${state.sf}층, H=${hs.toFixed(1)}m)`, 'rgba(51,65,85,0.88)', '#ffffff', 0.85);
+      sLabel.position.set(0, hs + 3.2, sZCenter);
       campusGroup.add(sLabel);
 
       // North Building (Target)
+      const nZCenter = -state.d / 2 - BLDG_DEPTH / 2;
       const nGeo = new THREE.BoxGeometry(state.wn, hn, BLDG_DEPTH);
       const nMesh = new THREE.Mesh(nGeo, northMat);
-      nMesh.position.set(0, hn / 2, -state.d / 2 - BLDG_DEPTH / 2);
+      nMesh.position.set(0, hn / 2, nZCenter);
       nMesh.castShadow = true;
       nMesh.receiveShadow = true;
       campusGroup.add(nMesh);
       const nEdge = new THREE.LineSegments(new THREE.EdgesGeometry(nGeo), edgeMat);
       nEdge.position.copy(nMesh.position);
       campusGroup.add(nEdge);
+      addFloorSlabLines(state.wn, nZCenter, nBases, 0xcbd5e1);
 
-      const nLabel = createTextSprite(`북측 교사동 (${state.nf}층, ${hn.toFixed(1)}m)`, 'rgba(37,99,235,0.9)', '#ffffff', 0.85);
-      nLabel.position.set(0, hn + 3.2, -state.d / 2 - BLDG_DEPTH / 2);
+      const nLabel = createTextSprite(`북측 교사동 (${state.nf}층, H=${hn.toFixed(1)}m)`, 'rgba(37,99,235,0.9)', '#ffffff', 0.85);
+      nLabel.position.set(0, hn + 3.2, nZCenter);
       campusGroup.add(nLabel);
-
-      // Floor slab lines on North Building south face
-      for (let f = 1; f < state.nf; f++) {
-        const ly = f * FLOOR_H;
-        const pts = [
-          new THREE.Vector3(-state.wn / 2, ly, -state.d / 2 + 0.03),
-          new THREE.Vector3(state.wn / 2, ly, -state.d / 2 + 0.03)
-        ];
-        campusGroup.add(new THREE.Line(
-          new THREE.BufferGeometry().setFromPoints(pts),
-          new THREE.LineBasicMaterial({ color: 0xcbd5e1 })
-        ));
-      }
 
       // Dimension Line for D (on East side of gap)
       const dimX = Math.max(state.ws, state.wn) / 2 + 5;
@@ -1414,7 +1657,7 @@
           new THREE.LineBasicMaterial({ color: 0x2563eb })
         ));
       });
-      const dLabel = createTextSprite(`D = ${state.d}m (${(state.d / state.hs).toFixed(2)}H)`, 'rgba(37,99,235,0.92)', '#ffffff', 0.82);
+      const dLabel = createTextSprite(`D = ${state.d}m (${(state.d / hs).toFixed(2)}H)`, 'rgba(37,99,235,0.92)', '#ffffff', 0.82);
       dLabel.position.set(dimX + 4.5, 2.2, 0);
       campusGroup.add(dLabel);
 
@@ -1577,8 +1820,9 @@
       document.getElementById('kpi-counts').textContent =
         `충족 ${passCount} / 대상 ${totalCount}` + (exCount > 0 ? ` (제외 ${exCount})` : '');
 
-      document.getElementById('kpi-ratio').textContent = `${(state.d / state.hs).toFixed(2)} H`;
-      document.getElementById('kpi-dh-detail').textContent = `D ${state.d}m / H ${state.hs}m`;
+      const hs = getSouthHeight();
+      document.getElementById('kpi-ratio').textContent = `${(state.d / hs).toFixed(2)} H`;
+      document.getElementById('kpi-dh-detail').textContent = `D ${state.d}m / 남측 H ${hs.toFixed(1)}m`;
 
       if (activeItems.length > 0) {
         let worst = activeItems[0];
@@ -1606,6 +1850,7 @@
 
       if (!item) {
         document.getElementById('ins-name').textContent = '지점을 클릭하세요';
+        document.getElementById('ins-elev').textContent = '-';
         document.getElementById('ins-badge').textContent = '미선택';
         document.getElementById('ins-badge').className = 'pill-status pill-ex';
         document.getElementById('ins-total').textContent = '-';
@@ -1616,6 +1861,9 @@
       }
 
       document.getElementById('ins-name').textContent = item.label;
+      document.getElementById('ins-elev').textContent = state.mode === 'classroom'
+        ? `해당 층고 ${item.floorH.toFixed(1)}m · 창중심 GL+${item.glCenterY.toFixed(2)}m (바닥+${item.winCenterY.toFixed(2)}m)`
+        : `옥외 체육장 지면 격자 (GL+0.05m)`;
       const badge = document.getElementById('ins-badge');
       if (item.excluded) {
         badge.textContent = '비거실 제외';
@@ -1661,19 +1909,95 @@
       }
     }
 
-    function syncControlsUI() {
-      document.getElementById('slider-hs').value = state.hs;
-      document.getElementById('val-hs').textContent = `${state.hs.toFixed(1)} m`;
+    function renderFloorGrid(containerId, floors, buildingKey) {
+      const wrap = document.getElementById(containerId);
+      const existingInputs = wrap.querySelectorAll('input.floor-input');
+      // Only rebuild DOM if floor count changed (preserves active focus while typing!)
+      if (existingInputs.length !== floors.length) {
+        wrap.innerHTML = '';
+        floors.forEach((h, idx) => {
+          const item = document.createElement('div');
+          item.className = 'floor-item';
+
+          const lbl = document.createElement('span');
+          lbl.className = 'floor-item-label';
+          lbl.textContent = `${idx + 1}층`;
+
+          const inputWrap = document.createElement('div');
+          inputWrap.className = 'floor-input-wrap';
+
+          const inp = document.createElement('input');
+          inp.type = 'number';
+          inp.className = 'floor-input';
+          inp.min = String(MIN_FLOOR_H);
+          inp.max = String(MAX_FLOOR_H);
+          inp.step = '0.1';
+          inp.value = h.toFixed(1);
+          inp.dataset.idx = String(idx);
+
+          inp.addEventListener('input', () => {
+            const raw = parseFloat(inp.value);
+            if (Number.isNaN(raw)) return;
+            const clamped = round1(clamp(raw, MIN_FLOOR_H, MAX_FLOOR_H));
+            if (buildingKey === 'south') {
+              state.sFloors[idx] = clamped;
+            } else {
+              state.nFloors[idx] = clamped;
+            }
+            fullUpdate(true);
+          });
+
+          inp.addEventListener('blur', () => {
+            const raw = parseFloat(inp.value);
+            const arr = buildingKey === 'south' ? state.sFloors : state.nFloors;
+            const valid = Number.isNaN(raw) ? arr[idx] : round1(clamp(raw, MIN_FLOOR_H, MAX_FLOOR_H));
+            arr[idx] = valid;
+            inp.value = valid.toFixed(1);
+            fullUpdate(false);
+          });
+
+          const unit = document.createElement('span');
+          unit.className = 'floor-unit';
+          unit.textContent = 'm';
+
+          inputWrap.appendChild(inp);
+          inputWrap.appendChild(unit);
+          item.appendChild(lbl);
+          item.appendChild(inputWrap);
+          wrap.appendChild(item);
+        });
+      } else {
+        existingInputs.forEach((inp, idx) => {
+          if (document.activeElement !== inp) {
+            inp.value = floors[idx].toFixed(1);
+          }
+        });
+      }
+    }
+
+    function syncControlsUI(skipFloorInputRewrite = false) {
+      const hs = getSouthHeight();
+      const hn = getNorthHeight();
 
       document.getElementById('slider-d').value = state.d;
       document.getElementById('val-d').textContent = `${state.d.toFixed(1)} m`;
 
+      document.getElementById('slider-sf').value = state.sf;
+      document.getElementById('val-sf').textContent = `${state.sf}층`;
       document.getElementById('slider-ws').value = state.ws;
       document.getElementById('val-ws').textContent = `${state.ws} m`;
+      document.getElementById('val-south-summary').textContent = `${state.sf}층 · 총 H ${hs.toFixed(1)}m`;
 
       document.getElementById('slider-nf').value = state.nf;
+      document.getElementById('val-nf').textContent = `${state.nf}층`;
       document.getElementById('slider-wn').value = state.wn;
-      document.getElementById('val-north').textContent = `${state.nf}층 / ${state.wn} m`;
+      document.getElementById('val-wn').textContent = `${state.wn} m`;
+      document.getElementById('val-north-summary').textContent = `${state.nf}층 · 총 H ${hn.toFixed(1)}m`;
+
+      if (!skipFloorInputRewrite) {
+        renderFloorGrid('south-floors-grid', state.sFloors, 'south');
+        renderFloorGrid('north-floors-grid', state.nFloors, 'north');
+      }
 
       document.getElementById('slider-theta').value = state.theta;
       const thText = state.theta === 0 ? '0° (정남향)' : (state.theta < 0 ? `${state.theta}° (남동향)` : `+${state.theta}° (남서향)`);
@@ -1698,6 +2022,8 @@
       const winCenterY = state.winSill + state.winH / 2;
       document.getElementById('val-win-summary').textContent =
         `${state.winW.toFixed(1)}×${state.winH.toFixed(1)}m · 중심 +${winCenterY.toFixed(2)}m`;
+      document.getElementById('disc-bldg-spec').textContent =
+        `남측 ${state.sf}층(${hs.toFixed(1)}m) · 북측 ${state.nf}층(${hn.toFixed(1)}m)`;
       document.getElementById('disc-win-spec').textContent =
         `창문 ${state.winW.toFixed(1)}×${state.winH.toFixed(1)}m(창대 ${state.winSill.toFixed(1)}m, 중심 +${winCenterY.toFixed(2)}m)`;
 
@@ -1722,8 +2048,8 @@
       document.querySelectorAll('#theta-presets .seg-btn').forEach(b => b.classList.toggle('active', Number(b.dataset.th) === state.theta));
     }
 
-    function fullUpdate() {
-      syncControlsUI();
+    function fullUpdate(skipFloorInputRewrite = false) {
+      syncControlsUI(skipFloorInputRewrite);
       runAnalysis();
       rebuildSunArc();
       rebuildCampus();
@@ -1782,11 +2108,36 @@
       fullUpdate();
     });
 
-    document.getElementById('slider-hs').addEventListener('input', e => { state.hs = parseFloat(e.target.value); fullUpdate(); });
     document.getElementById('slider-d').addEventListener('input', e => { state.d = parseFloat(e.target.value); fullUpdate(); });
+    document.getElementById('slider-sf').addEventListener('input', e => {
+      state.sf = parseInt(e.target.value, 10);
+      state.sFloors = resizeFloors(state.sFloors, state.sf);
+      fullUpdate();
+    });
     document.getElementById('slider-ws').addEventListener('input', e => { state.ws = parseFloat(e.target.value); fullUpdate(); });
-    document.getElementById('slider-nf').addEventListener('input', e => { state.nf = parseInt(e.target.value, 10); fullUpdate(); });
+    document.getElementById('slider-nf').addEventListener('input', e => {
+      state.nf = parseInt(e.target.value, 10);
+      state.nFloors = resizeFloors(state.nFloors, state.nf);
+      fullUpdate();
+    });
     document.getElementById('slider-wn').addEventListener('input', e => { state.wn = parseFloat(e.target.value); fullUpdate(); });
+
+    document.querySelectorAll('#south-uniform-chips .mini-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const h = parseFloat(btn.dataset.h);
+        state.sFloors = Array(state.sf).fill(h);
+        fullUpdate();
+        showToast(`남측 교사동 전 층 층고를 ${h.toFixed(1)}m로 일괄 적용했습니다.`);
+      });
+    });
+    document.querySelectorAll('#north-uniform-chips .mini-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const h = parseFloat(btn.dataset.h);
+        state.nFloors = Array(state.nf).fill(h);
+        fullUpdate();
+        showToast(`북측 교사동 전 층 층고를 ${h.toFixed(1)}m로 일괄 적용했습니다.`);
+      });
+    });
     document.getElementById('slider-theta').addEventListener('input', e => { state.theta = parseFloat(e.target.value); fullUpdate(); });
     document.getElementById('check-ex1').addEventListener('change', e => { state.ex1 = e.target.checked; fullUpdate(); });
 
@@ -1840,12 +2191,14 @@
     });
 
     document.getElementById('btn-reset').addEventListener('click', () => {
-      state.hs = 14.0; state.ws = 48.0; state.d = 22.0;
-      state.nf = 4; state.wn = 48.0; state.theta = 0;
+      state.sf = 4; state.sFloors = [3.5, 3.5, 3.5, 3.5]; state.ws = 48.0;
+      state.d = 22.0;
+      state.nf = 4; state.nFloors = [3.5, 3.5, 3.5, 3.5]; state.wn = 48.0;
+      state.theta = 0;
       state.winW = 5.2; state.winH = 1.8; state.winSill = 0.9; state.winEval = 'center';
       state.ex1 = false; state.excludedIds.clear();
       fullUpdate();
-      showToast('기본 배치 및 창문 조건으로 초기화되었습니다.');
+      showToast('기본 층수·층고·창문 조건으로 초기화되었습니다.');
     });
 
     // Camera Presets
@@ -1876,9 +2229,10 @@
     // Screenshot PNG
     document.getElementById('btn-capture').addEventListener('click', () => {
       renderer.render(scene, camera);
+      const hs = getSouthHeight();
       const a = document.createElement('a');
       a.href = renderer.domElement.toDataURL('image/png');
-      a.download = `학교일조시뮬레이션_H${state.hs}_D${state.d}.png`;
+      a.download = `학교일조시뮬레이션_S${state.sf}F(${hs.toFixed(1)}m)_N${state.nf}F_D${state.d}.png`;
       a.click();
       showToast('3D 시뮬레이션 화면이 PNG로 저장되었습니다.');
     });
@@ -1886,18 +2240,20 @@
     // Export CSV (UTF-8 BOM for Korean Excel)
     document.getElementById('btn-csv').addEventListener('click', () => {
       const rule = LEVEL_RULES[state.level];
+      const hs = getSouthHeight();
       const isRoom = state.mode === 'classroom';
       const headers = isRoom
-        ? ['ID', '지점명', '창문규격(m)', '창대높이(m)', '창중심높이(m)', '측정방식', '총일조(시간)', `연속일조_${rule.refStart}~${rule.refEnd}시(시간)`, '판정결과']
+        ? ['ID', '지점명', '층고(m)', '창문규격(m)', '창대높이(m)', '수광점_GL(m)', '측정방식', '총일조(시간)', `연속일조_${rule.refStart}~${rule.refEnd}시(시간)`, '판정결과']
         : ['ID', '지점명', '총일조(시간)', `연속일조_${rule.refStart}~${rule.refEnd}시(시간)`, '판정결과'];
       const evalLabel = state.winEval === 'center' ? '중심점' : '창면5점과반';
       const rows = currentResults.map(r => isRoom
         ? [
             r.id,
             r.label,
-            `${state.winW.toFixed(1)}x${state.winH.toFixed(1)}`,
-            state.winSill.toFixed(1),
-            r.winCenterY.toFixed(2),
+            r.floorH.toFixed(1),
+            `${r.w.toFixed(1)}x${r.h.toFixed(1)}`,
+            r.sill.toFixed(1),
+            r.glCenterY.toFixed(2),
             evalLabel,
             r.totalHrs.toFixed(2),
             r.contHrs.toFixed(2),
@@ -1916,7 +2272,7 @@
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       const winSuffix = isRoom ? `_W${state.winW.toFixed(1)}x${state.winH.toFixed(1)}` : '';
-      a.download = `일조분석결과_${state.mode}_H${state.hs}_D${state.d}${winSuffix}.csv`;
+      a.download = `일조분석결과_${state.mode}_H${hs.toFixed(1)}_D${state.d}${winSuffix}.csv`;
       a.click();
       showToast('분석 결과 CSV 파일이 다운로드되었습니다.');
     });
