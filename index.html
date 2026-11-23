@@ -531,6 +531,34 @@
       margin-top: -4px;
     }
 
+    .inline-num-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .inline-num-input {
+      width: 68px;
+      padding: 2px 5px;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      background: #f8fafc;
+    }
+    .inline-num-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #ffffff;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
     /* Inspector Card */
     .inspector-box {
       background: #f8fafc;
@@ -768,10 +796,20 @@
 
         <div class="control-row">
           <div class="control-header">
-            <span>교사동 간 인동거리 (D)</span>
-            <span class="control-val" id="val-d">22.0 m</span>
+            <span>교사동 간 인동거리 (D, 최대 500m)</span>
+            <span class="inline-num-wrap">
+              <input type="number" class="inline-num-input" id="input-d" min="10" max="500" step="0.5" value="22.0" />
+              <span class="floor-unit">m</span>
+            </span>
           </div>
-          <input type="range" id="slider-d" min="10" max="45" step="0.5" value="22" />
+          <input type="range" id="slider-d" min="10" max="500" step="0.5" value="22" />
+          <div class="mini-chip-group" id="d-presets" style="margin-top:2px; justify-content:flex-end;">
+            <button class="mini-chip" data-d="22">22m</button>
+            <button class="mini-chip" data-d="50">50m</button>
+            <button class="mini-chip" data-d="100">100m</button>
+            <button class="mini-chip" data-d="250">250m</button>
+            <button class="mini-chip" data-d="500">500m</button>
+          </div>
         </div>
 
         <div class="control-row">
@@ -793,32 +831,64 @@
             <span>남측 교사동 (음영 유발)</span>
             <span class="sub-box-meta" id="val-south-summary">4층 · 총 H 14.0m</span>
           </div>
-          <div class="dual-controls">
+
+          <div class="seg-group" id="south-mode-group">
+            <button class="seg-btn active" data-smode="floors">층별 층고 (1~6층)</button>
+            <button class="seg-btn" data-smode="direct">총높이 직접 (~250m)</button>
+          </div>
+
+          <div class="control-row">
+            <div class="control-header">
+              <span>길이 (Ws)</span>
+              <span class="control-val" id="val-ws">48 m</span>
+            </div>
+            <input type="range" id="slider-ws" min="16" max="200" step="4" value="48" />
+          </div>
+
+          <!-- South Mode A: Per-floor -->
+          <div id="south-floors-panel" style="display:flex; flex-direction:column; gap:8px;">
             <div class="control-row">
               <div class="control-header">
-                <span>층수</span>
+                <span>남측 층수 (1~6층)</span>
                 <span class="control-val" id="val-sf">4층</span>
               </div>
               <input type="range" id="slider-sf" min="1" max="6" step="1" value="4" />
             </div>
+            <div class="floor-toolbar">
+              <span class="floor-toolbar-label">층별 층고 (2.5~8.0m)</span>
+              <div class="mini-chip-group" id="south-uniform-chips" title="남측 동 전 층 층고 일괄 적용">
+                <button class="mini-chip" data-h="3.3">3.3</button>
+                <button class="mini-chip" data-h="3.5">3.5</button>
+                <button class="mini-chip" data-h="3.6">3.6</button>
+                <button class="mini-chip" data-h="4.0">4.0</button>
+              </div>
+            </div>
+            <div class="floor-grid" id="south-floors-grid"></div>
+          </div>
+
+          <!-- South Mode B: Direct Height up to 250m -->
+          <div id="south-direct-panel" class="hidden" style="display:flex; flex-direction:column; gap:6px;">
             <div class="control-row">
               <div class="control-header">
-                <span>길이 (Ws)</span>
-                <span class="control-val" id="val-ws">48 m</span>
+                <span>남측 건물 높이 (3~250m)</span>
+                <span class="inline-num-wrap">
+                  <input type="number" class="inline-num-input" id="input-sdirect" min="3" max="250" step="0.5" value="14.0" />
+                  <span class="floor-unit">m</span>
+                </span>
               </div>
-              <input type="range" id="slider-ws" min="16" max="80" step="4" value="48" />
+              <input type="range" id="slider-sdirect" min="3" max="250" step="0.5" value="14" />
+            </div>
+            <div class="floor-toolbar">
+              <span class="floor-toolbar-label">높이 프리셋</span>
+              <div class="mini-chip-group" id="sdirect-presets">
+                <button class="mini-chip" data-sh="14">14m</button>
+                <button class="mini-chip" data-sh="45">45m</button>
+                <button class="mini-chip" data-sh="90">90m</button>
+                <button class="mini-chip" data-sh="150">150m</button>
+                <button class="mini-chip" data-sh="250">250m</button>
+              </div>
             </div>
           </div>
-          <div class="floor-toolbar">
-            <span class="floor-toolbar-label">층별 층고 (2.5~8.0m)</span>
-            <div class="mini-chip-group" id="south-uniform-chips" title="남측 동 전 층 층고 일괄 적용">
-              <button class="mini-chip" data-h="3.3">3.3</button>
-              <button class="mini-chip" data-h="3.5">3.5</button>
-              <button class="mini-chip" data-h="3.6">3.6</button>
-              <button class="mini-chip" data-h="4.0">4.0</button>
-            </div>
-          </div>
-          <div class="floor-grid" id="south-floors-grid"></div>
         </div>
 
         <!-- North Building Floor & Height Config -->
@@ -830,7 +900,7 @@
           <div class="dual-controls">
             <div class="control-row">
               <div class="control-header">
-                <span>층수</span>
+                <span>층수 (최대 6층)</span>
                 <span class="control-val" id="val-nf">4층</span>
               </div>
               <input type="range" id="slider-nf" min="1" max="6" step="1" value="4" />
@@ -960,6 +1030,10 @@
     const MAX_FLOOR_H = 8.0;
     const MIN_FLOORS = 1;
     const MAX_FLOORS = 6;
+    const MIN_DIRECT_H = 3.0;
+    const MAX_DIRECT_H = 250.0;
+    const MIN_DIST = 10.0;
+    const MAX_DIST = 500.0;
     const BLDG_DEPTH = 12.0;
     const BAY_WIDTH = 8.0;
 
@@ -980,6 +1054,8 @@
       lat: 37.5,
       lon: 127.0,
       timeMode: 'solar', // 'solar' | 'kst'
+      sMode: 'floors',   // 'floors' | 'direct'
+      sDirectH: 14.0,    // direct total height up to 250m
       sf: 4,
       sFloors: [3.5, 3.5, 3.5, 3.5],
       ws: 48.0,
@@ -1004,7 +1080,19 @@
 
     // ---------- Building Floor Helpers ----------
     function getSouthHeight() {
+      if (state.sMode === 'direct') return round1(clamp(state.sDirectH, MIN_DIRECT_H, MAX_DIRECT_H));
       return round1(state.sFloors.reduce((acc, h) => acc + h, 0));
+    }
+
+    function getSceneMetrics() {
+      const hs = getSouthHeight();
+      const hn = getNorthHeight();
+      const maxH = Math.max(hs, hn);
+      const maxW = Math.max(state.ws, state.wn);
+      const compassR = Math.max(64, state.d * 0.58 + 38, maxW * 0.62 + 24);
+      const sunRadius = Math.max(78, compassR * 1.18, maxH * 1.35 + 40);
+      const labelScale = Math.max(1.0, Math.min(4.8, sunRadius / 80));
+      return { hs, hn, maxH, maxW, compassR, sunRadius, labelScale };
     }
 
     function getNorthHeight() {
@@ -1062,10 +1150,23 @@
           state.sFloors = parsed.slice(0, state.sf);
         }
       } else if (p.has('hs')) {
-        // Backward compatibility with legacy total height URL parameter
-        const hsVal = clamp(parseFloat(p.get('hs')), 5, 36);
-        const avg = round1(clamp(hsVal / state.sf, MIN_FLOOR_H, MAX_FLOOR_H));
-        state.sFloors = Array(state.sf).fill(avg);
+        const hsVal = clamp(parseFloat(p.get('hs')), MIN_DIRECT_H, MAX_DIRECT_H);
+        if (hsVal > 48) {
+          state.sMode = 'direct';
+          state.sDirectH = round1(hsVal);
+        } else {
+          const avg = round1(clamp(hsVal / state.sf, MIN_FLOOR_H, MAX_FLOOR_H));
+          state.sFloors = Array(state.sf).fill(avg);
+          state.sDirectH = round1(hsVal);
+        }
+      }
+      if (p.has('sm') && ['floors', 'direct'].includes(p.get('sm'))) {
+        state.sMode = p.get('sm');
+      }
+      if (p.has('sdh')) {
+        state.sDirectH = round1(clamp(parseFloat(p.get('sdh')), MIN_DIRECT_H, MAX_DIRECT_H));
+      } else if (state.sMode === 'floors') {
+        state.sDirectH = round1(state.sFloors.reduce((a, b) => a + b, 0));
       }
 
       if (p.has('nf')) {
@@ -1080,8 +1181,8 @@
         }
       }
 
-      if (p.has('ws')) state.ws = clamp(parseFloat(p.get('ws')), 16, 80);
-      if (p.has('d'))  state.d  = clamp(parseFloat(p.get('d')), 10, 45);
+      if (p.has('ws')) state.ws = clamp(parseFloat(p.get('ws')), 16, 200);
+      if (p.has('d'))  state.d  = clamp(parseFloat(p.get('d')), MIN_DIST, MAX_DIST);
       if (p.has('wn')) state.wn = clamp(parseFloat(p.get('wn')), 24, 72);
       if (p.has('th')) state.theta = clamp(parseFloat(p.get('th')), -45, 45);
       if (p.has('ex1')) state.ex1 = p.get('ex1') === '1';
@@ -1102,6 +1203,8 @@
       p.set('md', state.mode);
       p.set('lv', state.level);
       p.set('tm', state.timeMode);
+      p.set('sm', state.sMode);
+      p.set('sdh', state.sDirectH.toFixed(1));
       p.set('sf', state.sf);
       p.set('sh', state.sFloors.map(h => h.toFixed(1)).join(','));
       p.set('ws', state.ws);
@@ -1404,9 +1507,9 @@
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xeef3f8);
-    scene.fog = new THREE.Fog(0xeef3f8, 180, 420);
+    scene.fog = new THREE.Fog(0xeef3f8, 300, 1200);
 
-    const camera = new THREE.PerspectiveCamera(42, 1, 0.5, 600);
+    const camera = new THREE.PerspectiveCamera(42, 1, 1.0, 6000);
     camera.position.set(58, 46, 62);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -1420,7 +1523,7 @@
     controls.dampingFactor = 0.07;
     controls.maxPolarAngle = Math.PI / 2 - 0.02;
     controls.minDistance = 20;
-    controls.maxDistance = 240;
+    controls.maxDistance = 2600;
     controls.target.set(0, 6, 0);
 
     // Lighting
@@ -1432,8 +1535,8 @@
     sunLight.shadow.mapSize.width = 2048;
     sunLight.shadow.mapSize.height = 2048;
     sunLight.shadow.camera.near = 10;
-    sunLight.shadow.camera.far = 320;
-    const sc = 110;
+    sunLight.shadow.camera.far = 2600;
+    const sc = 120;
     sunLight.shadow.camera.left = -sc;
     sunLight.shadow.camera.right = sc;
     sunLight.shadow.camera.top = sc;
@@ -1441,17 +1544,21 @@
     sunLight.shadow.bias = -0.0005;
     scene.add(sunLight);
 
-    // Ground & World Compass
-    const groundGeo = new THREE.PlaneGeometry(400, 400);
+    // Ground & World Grids (macro 20m grid + inner 5m grid)
+    const groundGeo = new THREE.PlaneGeometry(3600, 3600);
     const groundMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.95 });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     scene.add(ground);
 
-    const gridHelper = new THREE.GridHelper(180, 36, 0xcbd5e1, 0xdbe4ee);
-    gridHelper.position.y = 0.01;
-    scene.add(gridHelper);
+    const macroGrid = new THREE.GridHelper(2400, 120, 0xcbd5e1, 0xdbe4ee);
+    macroGrid.position.y = 0.01;
+    scene.add(macroGrid);
+
+    const fineGrid = new THREE.GridHelper(160, 32, 0xcbd5e1, 0xe2e8f0);
+    fineGrid.position.y = 0.015;
+    scene.add(fineGrid);
 
     // World Groups
     const compassGroup = new THREE.Group();
@@ -1501,36 +1608,36 @@
       return sprite;
     }
 
-    function buildCompass() {
-      const r = 64;
-      const ringGeo = new THREE.RingGeometry(r - 0.3, r, 96);
+    function rebuildCompass() {
+      clearGroup(compassGroup);
+      const { compassR, labelScale } = getSceneMetrics();
+      const r = compassR;
+      const ringW = Math.max(0.35, r * 0.005);
+      const ringGeo = new THREE.RingGeometry(r - ringW, r, 96);
       const ringMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8, side: THREE.DoubleSide, transparent: true, opacity: 0.45 });
       const ring = new THREE.Mesh(ringGeo, ringMat);
       ring.rotation.x = -Math.PI / 2;
       ring.position.y = 0.03;
       compassGroup.add(ring);
 
+      const offset = 4 * labelScale;
       const dirs = [
-        { t: '북 (N)', x: 0, z: -r - 4, bg: '#1e293b' },
-        { t: '남 (S)', x: 0, z: r + 4,  bg: '#dc2626' },
-        { t: '동 (E)', x: r + 4, z: 0,  bg: '#475569' },
-        { t: '서 (W)', x: -r - 4, z: 0, bg: '#475569' }
+        { t: '북 (N)', x: 0, z: -r - offset, bg: '#1e293b' },
+        { t: '남 (S)', x: 0, z: r + offset,  bg: '#dc2626' },
+        { t: '동 (E)', x: r + offset, z: 0,  bg: '#475569' },
+        { t: '서 (W)', x: -r - offset, z: 0, bg: '#475569' }
       ];
       dirs.forEach(d => {
-        const sp = createTextSprite(d.t, d.bg, '#ffffff', 0.9);
-        sp.position.set(d.x, 1.5, d.z);
+        const sp = createTextSprite(d.t, d.bg, '#ffffff', 0.9 * labelScale);
+        sp.position.set(d.x, 1.5 * labelScale, d.z);
         compassGroup.add(sp);
       });
     }
-    buildCompass();
 
     function rebuildSunArc() {
-      while (sunArcGroup.children.length) {
-        const c = sunArcGroup.children.pop();
-        if (c.geometry) c.geometry.dispose();
-        if (c.material) c.material.dispose();
-      }
-      const radius = 78;
+      clearGroup(sunArcGroup);
+      const { sunRadius, labelScale } = getSceneMetrics();
+      const radius = sunRadius;
       const pts = [];
       for (let h = 8.0; h <= 16.001; h += 0.1) {
         const sv = getSunWorldVector(h);
@@ -1540,7 +1647,11 @@
       }
       if (pts.length > 1) {
         const geo = new THREE.BufferGeometry().setFromPoints(pts);
-        const mat = new THREE.LineDashedMaterial({ color: 0xf59e0b, dashSize: 2.2, gapSize: 1.4 });
+        const mat = new THREE.LineDashedMaterial({
+          color: 0xf59e0b,
+          dashSize: 2.2 * labelScale,
+          gapSize: 1.4 * labelScale
+        });
         const line = new THREE.Line(geo, mat);
         line.computeLineDistances();
         sunArcGroup.add(line);
@@ -1549,11 +1660,19 @@
       [9, 12, 15].forEach(h => {
         const sv = getSunWorldVector(h);
         if (sv.y > 0) {
-          const sp = createTextSprite(`${h}시`, 'rgba(245,158,11,0.9)', '#ffffff', 0.65);
-          sp.position.set(sv.x * (radius + 4), sv.y * (radius + 4) + 2, sv.z * (radius + 4));
+          const sp = createTextSprite(`${h}시`, 'rgba(245,158,11,0.9)', '#ffffff', 0.65 * labelScale);
+          sp.position.set(
+            sv.x * (radius + 4 * labelScale),
+            sv.y * (radius + 4 * labelScale) + 2 * labelScale,
+            sv.z * (radius + 4 * labelScale)
+          );
           sunArcGroup.add(sp);
         }
       });
+
+      // Dynamically expand fog range so distant buildings stay crisp
+      scene.fog.near = Math.max(240, radius * 3.2);
+      scene.fog.far  = Math.max(750, radius * 8.5);
     }
 
     function clearGroup(grp) {
@@ -1575,9 +1694,16 @@
       // Rotate campus so theta=-30 (SE) rotates +30° around Y
       campusGroup.rotation.y = -state.theta * DEG2RAD;
 
-      const hs = getSouthHeight();
-      const hn = getNorthHeight();
-      const sBases = getCumulativeBases(state.sFloors);
+      const { hs, hn, labelScale } = getSceneMetrics();
+      const sBases = state.sMode === 'floors'
+        ? getCumulativeBases(state.sFloors)
+        : (() => {
+            const step = hs > 70 ? 10.0 : 3.5;
+            const arr = [0];
+            for (let y = step; y < hs - 0.5; y += step) arr.push(y);
+            arr.push(hs);
+            return arr;
+          })();
       const nBases = getCumulativeBases(state.nFloors);
 
       // Materials
@@ -1587,9 +1713,9 @@
 
       // Helper to add perimeter floor slab lines around a building box
       function addFloorSlabLines(width, zCenter, bases, colorHex) {
-        const halfW = width / 2 + 0.03;
-        const zFront = zCenter + BLDG_DEPTH / 2 + 0.03;
-        const zBack  = zCenter - BLDG_DEPTH / 2 - 0.03;
+        const halfW = width / 2 + 0.04;
+        const zFront = zCenter + BLDG_DEPTH / 2 + 0.04;
+        const zBack  = zCenter - BLDG_DEPTH / 2 - 0.04;
         const mat = new THREE.LineBasicMaterial({ color: colorHex });
         for (let f = 1; f < bases.length - 1; f++) {
           const ly = bases[f];
@@ -1617,8 +1743,11 @@
       campusGroup.add(sEdge);
       addFloorSlabLines(state.ws, sZCenter, sBases, 0x64748b);
 
-      const sLabel = createTextSprite(`남측 교사동 (${state.sf}층, H=${hs.toFixed(1)}m)`, 'rgba(51,65,85,0.88)', '#ffffff', 0.85);
-      sLabel.position.set(0, hs + 3.2, sZCenter);
+      const sLabelText = state.sMode === 'floors'
+        ? `남측 교사동 (${state.sf}층, H=${hs.toFixed(1)}m)`
+        : `남측 건물 (H=${hs.toFixed(1)}m)`;
+      const sLabel = createTextSprite(sLabelText, 'rgba(51,65,85,0.88)', '#ffffff', 0.85 * labelScale);
+      sLabel.position.set(0, hs + 3.2 * labelScale, sZCenter);
       campusGroup.add(sLabel);
 
       // North Building (Target)
@@ -1634,12 +1763,12 @@
       campusGroup.add(nEdge);
       addFloorSlabLines(state.wn, nZCenter, nBases, 0xcbd5e1);
 
-      const nLabel = createTextSprite(`북측 교사동 (${state.nf}층, H=${hn.toFixed(1)}m)`, 'rgba(37,99,235,0.9)', '#ffffff', 0.85);
-      nLabel.position.set(0, hn + 3.2, nZCenter);
+      const nLabel = createTextSprite(`북측 교사동 (${state.nf}층, H=${hn.toFixed(1)}m)`, 'rgba(37,99,235,0.9)', '#ffffff', 0.85 * labelScale);
+      nLabel.position.set(0, hn + 3.2 * labelScale, nZCenter);
       campusGroup.add(nLabel);
 
       // Dimension Line for D (on East side of gap)
-      const dimX = Math.max(state.ws, state.wn) / 2 + 5;
+      const dimX = Math.max(state.ws, state.wn) / 2 + 5 * Math.min(2.0, labelScale);
       const dimPts = [
         new THREE.Vector3(dimX, 0.25, -state.d / 2),
         new THREE.Vector3(dimX, 0.25, state.d / 2)
@@ -1648,17 +1777,18 @@
         new THREE.BufferGeometry().setFromPoints(dimPts),
         new THREE.LineBasicMaterial({ color: 0x2563eb })
       ));
+      const tickHalf = 1.5 * Math.min(2.5, labelScale);
       [-state.d / 2, state.d / 2].forEach(zPos => {
         campusGroup.add(new THREE.Line(
           new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(dimX - 1.5, 0.25, zPos),
-            new THREE.Vector3(dimX + 1.5, 0.25, zPos)
+            new THREE.Vector3(dimX - tickHalf, 0.25, zPos),
+            new THREE.Vector3(dimX + tickHalf, 0.25, zPos)
           ]),
           new THREE.LineBasicMaterial({ color: 0x2563eb })
         ));
       });
-      const dLabel = createTextSprite(`D = ${state.d}m (${(state.d / hs).toFixed(2)}H)`, 'rgba(37,99,235,0.92)', '#ffffff', 0.82);
-      dLabel.position.set(dimX + 4.5, 2.2, 0);
+      const dLabel = createTextSprite(`D = ${state.d}m (${(state.d / hs).toFixed(2)}H)`, 'rgba(37,99,235,0.92)', '#ffffff', 0.82 * labelScale);
+      dLabel.position.set(dimX + 4.5 * labelScale, 2.2 * labelScale, 0);
       campusGroup.add(dLabel);
 
       // Render Analysis Results (Windows or Athletic Field Grid)
@@ -1778,9 +1908,22 @@
 
     function updateSunPosition() {
       const sv = getSunWorldVector(state.viewHour);
-      const dist = 78;
-      sunSphere.position.set(sv.x * dist, Math.max(0.5, sv.y * dist), sv.z * dist);
-      sunLight.position.set(sv.x * 110, Math.max(2, sv.y * 110), sv.z * 110);
+      const { hs, sunRadius } = getSceneMetrics();
+      const sphereScale = Math.max(1.0, sunRadius / 78);
+      sunSphere.scale.setScalar(sphereScale);
+      sunSphere.position.set(sv.x * sunRadius, Math.max(0.5, sv.y * sunRadius), sv.z * sunRadius);
+
+      // Dynamically fit directional shadow camera to building height & spacing
+      const shadowHalf = Math.max(110, Math.min(1100, state.d * 0.75 + hs * 1.45 + 65));
+      const lightDist  = Math.max(140, shadowHalf * 1.85);
+      sunLight.position.set(sv.x * lightDist, Math.max(5, sv.y * lightDist), sv.z * lightDist);
+      sunLight.shadow.camera.left   = -shadowHalf;
+      sunLight.shadow.camera.right  =  shadowHalf;
+      sunLight.shadow.camera.top    =  shadowHalf;
+      sunLight.shadow.camera.bottom = -shadowHalf;
+      sunLight.shadow.camera.far    = lightDist * 2.8;
+      sunLight.shadow.camera.updateProjectionMatrix();
+
       sunLight.intensity = sv.y > 0.02 ? Math.min(1.65, 0.7 + sv.y * 1.8) : 0.05;
 
       // Update time text
@@ -1980,13 +2123,26 @@
       const hn = getNorthHeight();
 
       document.getElementById('slider-d').value = state.d;
-      document.getElementById('val-d').textContent = `${state.d.toFixed(1)} m`;
+      const inpD = document.getElementById('input-d');
+      if (document.activeElement !== inpD) inpD.value = state.d.toFixed(1);
+
+      document.querySelectorAll('#south-mode-group .seg-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.smode === state.sMode);
+      });
+      document.getElementById('south-floors-panel').classList.toggle('hidden', state.sMode !== 'floors');
+      document.getElementById('south-direct-panel').classList.toggle('hidden', state.sMode !== 'direct');
+
+      document.getElementById('slider-sdirect').value = state.sDirectH;
+      const inpSD = document.getElementById('input-sdirect');
+      if (document.activeElement !== inpSD) inpSD.value = state.sDirectH.toFixed(1);
 
       document.getElementById('slider-sf').value = state.sf;
       document.getElementById('val-sf').textContent = `${state.sf}층`;
       document.getElementById('slider-ws').value = state.ws;
       document.getElementById('val-ws').textContent = `${state.ws} m`;
-      document.getElementById('val-south-summary').textContent = `${state.sf}층 · 총 H ${hs.toFixed(1)}m`;
+      document.getElementById('val-south-summary').textContent = state.sMode === 'floors'
+        ? `${state.sf}층 · 총 H ${hs.toFixed(1)}m`
+        : `직접설정 · 총 H ${hs.toFixed(1)}m`;
 
       document.getElementById('slider-nf').value = state.nf;
       document.getElementById('val-nf').textContent = `${state.nf}층`;
@@ -2022,8 +2178,9 @@
       const winCenterY = state.winSill + state.winH / 2;
       document.getElementById('val-win-summary').textContent =
         `${state.winW.toFixed(1)}×${state.winH.toFixed(1)}m · 중심 +${winCenterY.toFixed(2)}m`;
+      const sSpecText = state.sMode === 'floors' ? `남측 ${state.sf}층(${hs.toFixed(1)}m)` : `남측 직접높이(${hs.toFixed(1)}m)`;
       document.getElementById('disc-bldg-spec').textContent =
-        `남측 ${state.sf}층(${hs.toFixed(1)}m) · 북측 ${state.nf}층(${hn.toFixed(1)}m)`;
+        `${sSpecText} · 북측 ${state.nf}층(${hn.toFixed(1)}m)`;
       document.getElementById('disc-win-spec').textContent =
         `창문 ${state.winW.toFixed(1)}×${state.winH.toFixed(1)}m(창대 ${state.winSill.toFixed(1)}m, 중심 +${winCenterY.toFixed(2)}m)`;
 
@@ -2051,6 +2208,7 @@
     function fullUpdate(skipFloorInputRewrite = false) {
       syncControlsUI(skipFloorInputRewrite);
       runAnalysis();
+      rebuildCompass();
       rebuildSunArc();
       rebuildCampus();
       updateSunPosition();
@@ -2108,10 +2266,71 @@
       fullUpdate();
     });
 
-    document.getElementById('slider-d').addEventListener('input', e => { state.d = parseFloat(e.target.value); fullUpdate(); });
+    document.getElementById('slider-d').addEventListener('input', e => {
+      state.d = round1(clamp(parseFloat(e.target.value), MIN_DIST, MAX_DIST));
+      fullUpdate();
+    });
+    const inpD = document.getElementById('input-d');
+    inpD.addEventListener('input', () => {
+      const raw = parseFloat(inpD.value);
+      if (Number.isNaN(raw)) return;
+      state.d = round1(clamp(raw, MIN_DIST, MAX_DIST));
+      fullUpdate();
+    });
+    inpD.addEventListener('blur', () => {
+      const raw = parseFloat(inpD.value);
+      state.d = Number.isNaN(raw) ? state.d : round1(clamp(raw, MIN_DIST, MAX_DIST));
+      inpD.value = state.d.toFixed(1);
+      fullUpdate();
+    });
+    document.querySelectorAll('#d-presets .mini-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.d = parseFloat(btn.dataset.d);
+        fullUpdate();
+        fitCameraIso();
+      });
+    });
+
+    document.querySelectorAll('#south-mode-group .seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const nextMode = btn.dataset.smode;
+        if (nextMode === 'direct' && state.sMode === 'floors') {
+          state.sDirectH = round1(state.sFloors.reduce((a, b) => a + b, 0));
+        }
+        state.sMode = nextMode;
+        fullUpdate();
+      });
+    });
+
+    document.getElementById('slider-sdirect').addEventListener('input', e => {
+      state.sDirectH = round1(clamp(parseFloat(e.target.value), MIN_DIRECT_H, MAX_DIRECT_H));
+      fullUpdate();
+    });
+    const inpSD = document.getElementById('input-sdirect');
+    inpSD.addEventListener('input', () => {
+      const raw = parseFloat(inpSD.value);
+      if (Number.isNaN(raw)) return;
+      state.sDirectH = round1(clamp(raw, MIN_DIRECT_H, MAX_DIRECT_H));
+      fullUpdate();
+    });
+    inpSD.addEventListener('blur', () => {
+      const raw = parseFloat(inpSD.value);
+      state.sDirectH = Number.isNaN(raw) ? state.sDirectH : round1(clamp(raw, MIN_DIRECT_H, MAX_DIRECT_H));
+      inpSD.value = state.sDirectH.toFixed(1);
+      fullUpdate();
+    });
+    document.querySelectorAll('#sdirect-presets .mini-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.sDirectH = parseFloat(btn.dataset.sh);
+        fullUpdate();
+        fitCameraIso();
+      });
+    });
+
     document.getElementById('slider-sf').addEventListener('input', e => {
       state.sf = parseInt(e.target.value, 10);
       state.sFloors = resizeFloors(state.sFloors, state.sf);
+      state.sDirectH = round1(state.sFloors.reduce((a, b) => a + b, 0));
       fullUpdate();
     });
     document.getElementById('slider-ws').addEventListener('input', e => { state.ws = parseFloat(e.target.value); fullUpdate(); });
@@ -2190,7 +2409,29 @@
       fullUpdate();
     });
 
+    function fitCameraIso() {
+      const { maxH, compassR } = getSceneMetrics();
+      const span = Math.max(58, compassR * 0.95, maxH * 1.45);
+      camera.position.set(span * 0.92, Math.max(42, span * 0.68, maxH * 1.1), span * 0.98);
+      controls.target.set(0, Math.min(maxH * 0.35, 65), 0);
+    }
+
+    function fitCameraTop() {
+      const { compassR } = getSceneMetrics();
+      const h = Math.max(105, compassR * 2.45);
+      camera.position.set(0, h, 0.1);
+      controls.target.set(0, 0, 0);
+    }
+
+    function fitCameraSide() {
+      const { maxH, compassR } = getSceneMetrics();
+      const dist = Math.max(85, compassR * 1.55, maxH * 1.85);
+      camera.position.set(dist, Math.max(16, maxH * 0.55), 0);
+      controls.target.set(0, maxH * 0.35, 0);
+    }
+
     document.getElementById('btn-reset').addEventListener('click', () => {
+      state.sMode = 'floors'; state.sDirectH = 14.0;
       state.sf = 4; state.sFloors = [3.5, 3.5, 3.5, 3.5]; state.ws = 48.0;
       state.d = 22.0;
       state.nf = 4; state.nFloors = [3.5, 3.5, 3.5, 3.5]; state.wn = 48.0;
@@ -2198,22 +2439,14 @@
       state.winW = 5.2; state.winH = 1.8; state.winSill = 0.9; state.winEval = 'center';
       state.ex1 = false; state.excludedIds.clear();
       fullUpdate();
+      fitCameraIso();
       showToast('기본 층수·층고·창문 조건으로 초기화되었습니다.');
     });
 
-    // Camera Presets
-    document.getElementById('btn-cam-iso').addEventListener('click', () => {
-      camera.position.set(58, 46, 62);
-      controls.target.set(0, 6, 0);
-    });
-    document.getElementById('btn-cam-top').addEventListener('click', () => {
-      camera.position.set(0, 105, 0.1);
-      controls.target.set(0, 0, 0);
-    });
-    document.getElementById('btn-cam-side').addEventListener('click', () => {
-      camera.position.set(85, 16, 0);
-      controls.target.set(0, 8, 0);
-    });
+    // Camera Presets (auto-scaled to current spacing & building height)
+    document.getElementById('btn-cam-iso').addEventListener('click', fitCameraIso);
+    document.getElementById('btn-cam-top').addEventListener('click', fitCameraTop);
+    document.getElementById('btn-cam-side').addEventListener('click', fitCameraSide);
 
     // Share URL
     document.getElementById('btn-share').addEventListener('click', async () => {
@@ -2232,7 +2465,8 @@
       const hs = getSouthHeight();
       const a = document.createElement('a');
       a.href = renderer.domElement.toDataURL('image/png');
-      a.download = `학교일조시뮬레이션_S${state.sf}F(${hs.toFixed(1)}m)_N${state.nf}F_D${state.d}.png`;
+      const sTag = state.sMode === 'floors' ? `S${state.sf}F(${hs.toFixed(1)}m)` : `SH${hs.toFixed(1)}m`;
+      a.download = `학교일조시뮬레이션_${sTag}_N${state.nf}F_D${state.d}.png`;
       a.click();
       showToast('3D 시뮬레이션 화면이 PNG로 저장되었습니다.');
     });
@@ -2316,6 +2550,7 @@
     loadFromURL();
     onResize();
     fullUpdate();
+    fitCameraIso();
     animate(performance.now());
   </script>
 </body>
