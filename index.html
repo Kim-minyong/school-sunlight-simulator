@@ -684,7 +684,8 @@
     <div class="brand">
       <div class="brand-title">
         <span>학교 교사동 3D 일조·인동거리 시뮬레이터</span>
-        <span class="badge-law">교육부고시 제2019-176호 기준</span>
+        <span class="badge-law">v5 · D~500m / H~300m</span>
+        <span class="badge-law">교육부고시 제2019-176호</span>
       </div>
       <div class="brand-sub">동짓날(12/22) 08:00~16:00 3차원 광선 교차 판정 · 개별 창문 / 옥외 체육장(3m 후퇴·10m 격자)</div>
     </div>
@@ -796,18 +797,19 @@
 
         <div class="control-row">
           <div class="control-header">
-            <span>교사동 간 인동거리 (D, 최대 500m)</span>
+            <span>인동거리 (D, 5~500m)</span>
             <span class="inline-num-wrap">
-              <input type="number" class="inline-num-input" id="input-d" min="10" max="500" step="0.5" value="22.0" />
+              <input type="number" class="inline-num-input" id="input-d" min="5" max="500" step="0.5" value="22.0" />
               <span class="floor-unit">m</span>
             </span>
           </div>
-          <input type="range" id="slider-d" min="10" max="500" step="0.5" value="22" />
-          <div class="mini-chip-group" id="d-presets" style="margin-top:2px; justify-content:flex-end;">
+          <input type="range" id="slider-d" min="5" max="500" step="0.5" value="22" />
+          <div class="mini-chip-group" id="d-presets" style="margin-top:2px; justify-content:flex-end; flex-wrap:wrap;">
             <button class="mini-chip" data-d="22">22m</button>
             <button class="mini-chip" data-d="50">50m</button>
             <button class="mini-chip" data-d="100">100m</button>
-            <button class="mini-chip" data-d="250">250m</button>
+            <button class="mini-chip" data-d="200">200m</button>
+            <button class="mini-chip" data-d="300">300m</button>
             <button class="mini-chip" data-d="500">500m</button>
           </div>
         </div>
@@ -825,31 +827,60 @@
           </div>
         </div>
 
-        <!-- South Building Floor & Height Config -->
+        <!-- South Building (School or High-rise Apartment up to 300m) -->
         <div class="sub-box">
           <div class="sub-box-header">
-            <span>남측 교사동 (음영 유발)</span>
+            <span>남측 건물 (교사동 · 인접 아파트)</span>
             <span class="sub-box-meta" id="val-south-summary">4층 · 총 H 14.0m</span>
           </div>
 
-          <div class="seg-group" id="south-mode-group">
-            <button class="seg-btn active" data-smode="floors">층별 층고 (1~6층)</button>
-            <button class="seg-btn" data-smode="direct">총높이 직접 (~250m)</button>
-          </div>
-
+          <!-- Always-visible Total Height control (3 ~ 300m) -->
           <div class="control-row">
             <div class="control-header">
-              <span>길이 (Ws)</span>
-              <span class="control-val" id="val-ws">48 m</span>
+              <span>남측 총높이 H (3~300m)</span>
+              <span class="inline-num-wrap">
+                <input type="number" class="inline-num-input" id="input-sdirect" min="3" max="300" step="0.5" value="14.0" />
+                <span class="floor-unit">m</span>
+              </span>
             </div>
-            <input type="range" id="slider-ws" min="16" max="200" step="4" value="48" />
+            <input type="range" id="slider-sdirect" min="3" max="300" step="0.5" value="14" />
+            <div class="mini-chip-group" id="sdirect-presets" style="margin-top:2px; justify-content:flex-end; flex-wrap:wrap;">
+              <button class="mini-chip" data-sh="14">교사동 14m</button>
+              <button class="mini-chip" data-sh="75">아파트 75m</button>
+              <button class="mini-chip" data-sh="150">150m</button>
+              <button class="mini-chip" data-sh="200">200m</button>
+              <button class="mini-chip" data-sh="250">250m</button>
+              <button class="mini-chip" data-sh="300">300m</button>
+            </div>
           </div>
 
-          <!-- South Mode A: Per-floor -->
+          <div class="dual-controls">
+            <div class="control-row">
+              <div class="control-header">
+                <span>길이 (Ws)</span>
+                <span class="control-val" id="val-ws">48 m</span>
+              </div>
+              <input type="range" id="slider-ws" min="16" max="200" step="4" value="48" />
+            </div>
+            <div class="control-row">
+              <div class="control-header">
+                <span>깊이 (Ds)</span>
+                <span class="control-val" id="val-ds">12 m</span>
+              </div>
+              <input type="range" id="slider-ds" min="10" max="40" step="1" value="12" />
+            </div>
+          </div>
+
+          <div class="seg-group" id="south-mode-group">
+            <button class="seg-btn active" data-smode="floors">교사동 층별 층고 (1~6층)</button>
+            <button class="seg-btn" data-smode="direct">아파트 층수 환산 (~100층)</button>
+          </div>
+
+          <!-- South Mode A: School per-floor (1~6F) -->
           <div id="south-floors-panel" style="display:flex; flex-direction:column; gap:8px;">
             <div class="control-row">
               <div class="control-header">
-                <span>남측 층수 (1~6층)</span>
+                <span>남측 교사동 층수 (1~6층)</span>
                 <span class="control-val" id="val-sf">4층</span>
               </div>
               <input type="range" id="slider-sf" min="1" max="6" step="1" value="4" />
@@ -866,27 +897,26 @@
             <div class="floor-grid" id="south-floors-grid"></div>
           </div>
 
-          <!-- South Mode B: Direct Height up to 250m -->
+          <!-- South Mode B: High-rise Apartment Floor × FloorHeight helper (up to 300m) -->
           <div id="south-direct-panel" class="hidden" style="display:flex; flex-direction:column; gap:6px;">
-            <div class="control-row">
-              <div class="control-header">
-                <span>남측 건물 높이 (3~250m)</span>
-                <span class="inline-num-wrap">
-                  <input type="number" class="inline-num-input" id="input-sdirect" min="3" max="250" step="0.5" value="14.0" />
-                  <span class="floor-unit">m</span>
-                </span>
+            <div class="dual-controls">
+              <div class="control-row">
+                <div class="control-header">
+                  <span>아파트 층수</span>
+                  <span class="control-val" id="val-apt-floors">30층</span>
+                </div>
+                <input type="range" id="slider-apt-floors" min="5" max="100" step="1" value="30" />
               </div>
-              <input type="range" id="slider-sdirect" min="3" max="250" step="0.5" value="14" />
+              <div class="control-row">
+                <div class="control-header">
+                  <span>평균 층고</span>
+                  <span class="control-val" id="val-apt-fh">3.0 m</span>
+                </div>
+                <input type="range" id="slider-apt-fh" min="2.7" max="4.0" step="0.1" value="3.0" />
+              </div>
             </div>
-            <div class="floor-toolbar">
-              <span class="floor-toolbar-label">높이 프리셋</span>
-              <div class="mini-chip-group" id="sdirect-presets">
-                <button class="mini-chip" data-sh="14">14m</button>
-                <button class="mini-chip" data-sh="45">45m</button>
-                <button class="mini-chip" data-sh="90">90m</button>
-                <button class="mini-chip" data-sh="150">150m</button>
-                <button class="mini-chip" data-sh="250">250m</button>
-              </div>
+            <div style="font-size:10.5px; color:var(--muted);">
+              ※ 위 총높이(H)를 직접 입력·조절하거나 아파트 층수×층고로 자동 환산(최대 300m)할 수 있습니다.
             </div>
           </div>
         </div>
@@ -1010,7 +1040,7 @@
       <div class="disclaimer">
         <strong>법적 근거 및 유의사항</strong><br/>
         • 「교육환경 보호에 관한 법률」 시행규칙 [별표 1] 및 「교육환경평가서 작성 등에 관한 고시」(교육부고시 제2019-176호) [별표 2] 기준을 반영한 사전 개략 검토 도구입니다.<br/>
-        • <span id="disc-bldg-spec">남측 4층(14.0m) · 북측 4층(14.0m)</span>, <span id="disc-win-spec">창문 5.2×1.8m(창대 0.9m, 중심 +1.80m)</span>, 동 깊이 12m 기준이며, 실제 교육환경평가 심의 시에는 주변 건축물·지형 고저차·실제 입면 개구부를 반영한 정밀 3D 해석이 필요합니다.
+        • <span id="disc-bldg-spec">남측 4층(14.0m) · 북측 4층(14.0m)</span>, <span id="disc-win-spec">창문 5.2×1.8m(창대 0.9m, 중심 +1.80m)</span>, 북측 동 깊이 12m 기준이며, 실제 교육환경평가 심의 시에는 주변 건축물·지형 고저차·실제 입면 개구부를 반영한 정밀 3D 해석이 필요합니다.
       </div>
     </aside>
   </div>
@@ -1031,8 +1061,8 @@
     const MIN_FLOORS = 1;
     const MAX_FLOORS = 6;
     const MIN_DIRECT_H = 3.0;
-    const MAX_DIRECT_H = 250.0;
-    const MIN_DIST = 10.0;
+    const MAX_DIRECT_H = 300.0;
+    const MIN_DIST = 5.0;
     const MAX_DIST = 500.0;
     const BLDG_DEPTH = 12.0;
     const BAY_WIDTH = 8.0;
@@ -1055,10 +1085,12 @@
       lon: 127.0,
       timeMode: 'solar', // 'solar' | 'kst'
       sMode: 'floors',   // 'floors' | 'direct'
-      sDirectH: 14.0,    // direct total height up to 250m
+      sDirectH: 14.0,    // direct total height up to 300m
+      aptFH: 3.0,        // apartment average floor height helper
       sf: 4,
       sFloors: [3.5, 3.5, 3.5, 3.5],
       ws: 48.0,
+      ds: 12.0,          // south building depth (10~40m)
       d: 22.0,
       nf: 4,
       nFloors: [3.5, 3.5, 3.5, 3.5],
@@ -1182,6 +1214,7 @@
       }
 
       if (p.has('ws')) state.ws = clamp(parseFloat(p.get('ws')), 16, 200);
+      if (p.has('ds')) state.ds = clamp(parseFloat(p.get('ds')), 10, 40);
       if (p.has('d'))  state.d  = clamp(parseFloat(p.get('d')), MIN_DIST, MAX_DIST);
       if (p.has('wn')) state.wn = clamp(parseFloat(p.get('wn')), 24, 72);
       if (p.has('th')) state.theta = clamp(parseFloat(p.get('th')), -45, 45);
@@ -1208,6 +1241,7 @@
       p.set('sf', state.sf);
       p.set('sh', state.sFloors.map(h => h.toFixed(1)).join(','));
       p.set('ws', state.ws);
+      p.set('ds', state.ds);
       p.set('d', state.d);
       p.set('nf', state.nf);
       p.set('nh', state.nFloors.map(h => h.toFixed(1)).join(','));
@@ -1342,7 +1376,7 @@
       const southBox = {
         minX: -state.ws / 2, maxX: state.ws / 2,
         minY: 0,             maxY: hs,
-        minZ: state.d / 2,   maxZ: state.d / 2 + BLDG_DEPTH
+        minZ: state.d / 2,   maxZ: state.d / 2 + state.ds
       };
       const northBox = {
         minX: -state.wn / 2,            maxX: state.wn / 2,
@@ -1509,7 +1543,7 @@
     scene.background = new THREE.Color(0xeef3f8);
     scene.fog = new THREE.Fog(0xeef3f8, 300, 1200);
 
-    const camera = new THREE.PerspectiveCamera(42, 1, 1.0, 6000);
+    const camera = new THREE.PerspectiveCamera(42, 1, 1.0, 8000);
     camera.position.set(58, 46, 62);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -1523,7 +1557,7 @@
     controls.dampingFactor = 0.07;
     controls.maxPolarAngle = Math.PI / 2 - 0.02;
     controls.minDistance = 20;
-    controls.maxDistance = 2600;
+    controls.maxDistance = 3200;
     controls.target.set(0, 6, 0);
 
     // Lighting
@@ -1545,14 +1579,14 @@
     scene.add(sunLight);
 
     // Ground & World Grids (macro 20m grid + inner 5m grid)
-    const groundGeo = new THREE.PlaneGeometry(3600, 3600);
+    const groundGeo = new THREE.PlaneGeometry(4800, 4800);
     const groundMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.95 });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     scene.add(ground);
 
-    const macroGrid = new THREE.GridHelper(2400, 120, 0xcbd5e1, 0xdbe4ee);
+    const macroGrid = new THREE.GridHelper(3200, 160, 0xcbd5e1, 0xdbe4ee);
     macroGrid.position.y = 0.01;
     scene.add(macroGrid);
 
@@ -1712,10 +1746,10 @@
       const edgeMat  = new THREE.LineBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.45 });
 
       // Helper to add perimeter floor slab lines around a building box
-      function addFloorSlabLines(width, zCenter, bases, colorHex) {
+      function addFloorSlabLines(width, depth, zCenter, bases, colorHex) {
         const halfW = width / 2 + 0.04;
-        const zFront = zCenter + BLDG_DEPTH / 2 + 0.04;
-        const zBack  = zCenter - BLDG_DEPTH / 2 - 0.04;
+        const zFront = zCenter + depth / 2 + 0.04;
+        const zBack  = zCenter - depth / 2 - 0.04;
         const mat = new THREE.LineBasicMaterial({ color: colorHex });
         for (let f = 1; f < bases.length - 1; f++) {
           const ly = bases[f];
@@ -1730,9 +1764,9 @@
         }
       }
 
-      // South Building (Shadow Caster)
-      const sZCenter = state.d / 2 + BLDG_DEPTH / 2;
-      const sGeo = new THREE.BoxGeometry(state.ws, hs, BLDG_DEPTH);
+      // South Building (Shadow Caster - School or Apartment)
+      const sZCenter = state.d / 2 + state.ds / 2;
+      const sGeo = new THREE.BoxGeometry(state.ws, hs, state.ds);
       const sMesh = new THREE.Mesh(sGeo, southMat);
       sMesh.position.set(0, hs / 2, sZCenter);
       sMesh.castShadow = true;
@@ -1741,11 +1775,12 @@
       const sEdge = new THREE.LineSegments(new THREE.EdgesGeometry(sGeo), edgeMat);
       sEdge.position.copy(sMesh.position);
       campusGroup.add(sEdge);
-      addFloorSlabLines(state.ws, sZCenter, sBases, 0x64748b);
+      addFloorSlabLines(state.ws, state.ds, sZCenter, sBases, 0x64748b);
 
+      const estAptFloors = Math.max(1, Math.round(hs / state.aptFH));
       const sLabelText = state.sMode === 'floors'
         ? `남측 교사동 (${state.sf}층, H=${hs.toFixed(1)}m)`
-        : `남측 건물 (H=${hs.toFixed(1)}m)`;
+        : `남측 건물 (약 ${estAptFloors}층, H=${hs.toFixed(1)}m)`;
       const sLabel = createTextSprite(sLabelText, 'rgba(51,65,85,0.88)', '#ffffff', 0.85 * labelScale);
       sLabel.position.set(0, hs + 3.2 * labelScale, sZCenter);
       campusGroup.add(sLabel);
@@ -1761,7 +1796,7 @@
       const nEdge = new THREE.LineSegments(new THREE.EdgesGeometry(nGeo), edgeMat);
       nEdge.position.copy(nMesh.position);
       campusGroup.add(nEdge);
-      addFloorSlabLines(state.wn, nZCenter, nBases, 0xcbd5e1);
+      addFloorSlabLines(state.wn, BLDG_DEPTH, nZCenter, nBases, 0xcbd5e1);
 
       const nLabel = createTextSprite(`북측 교사동 (${state.nf}층, H=${hn.toFixed(1)}m)`, 'rgba(37,99,235,0.9)', '#ffffff', 0.85 * labelScale);
       nLabel.position.set(0, hn + 3.2 * labelScale, nZCenter);
@@ -1877,16 +1912,18 @@
           campusGroup.add(setLine);
         }
 
+        const sharedCellGeo = currentResults[0]
+          ? new THREE.PlaneGeometry(currentResults[0].cellW * 0.92, currentResults[0].cellD * 0.92)
+          : new THREE.PlaneGeometry(1, 1);
+        const passCellMat = new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.42, side: THREE.DoubleSide });
+        const failCellMat = new THREE.MeshBasicMaterial({ color: 0xef4444, transparent: true, opacity: 0.42, side: THREE.DoubleSide });
+        const passSelMat  = new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.80, side: THREE.DoubleSide });
+        const failSelMat  = new THREE.MeshBasicMaterial({ color: 0xef4444, transparent: true, opacity: 0.80, side: THREE.DoubleSide });
+
         currentResults.forEach(r => {
           const isSel = r.id === state.selectedId;
-          const gGeo = new THREE.PlaneGeometry(r.cellW * 0.92, r.cellD * 0.92);
-          const gMat = new THREE.MeshBasicMaterial({
-            color: r.pass ? 0x10b981 : 0xef4444,
-            transparent: true,
-            opacity: isSel ? 0.78 : 0.42,
-            side: THREE.DoubleSide
-          });
-          const gMesh = new THREE.Mesh(gGeo, gMat);
+          const gMat = isSel ? (r.pass ? passSelMat : failSelMat) : (r.pass ? passCellMat : failCellMat);
+          const gMesh = new THREE.Mesh(sharedCellGeo, gMat);
           gMesh.rotation.x = -Math.PI / 2;
           gMesh.position.set(r.x, 0.09, r.z);
           gMesh.userData.resultId = r.id;
@@ -1895,7 +1932,7 @@
 
           if (isSel) {
             const border = new THREE.LineSegments(
-              new THREE.EdgesGeometry(gGeo),
+              new THREE.EdgesGeometry(sharedCellGeo),
               new THREE.LineBasicMaterial({ color: 0x0f172a })
             );
             border.rotation.x = -Math.PI / 2;
@@ -1914,7 +1951,7 @@
       sunSphere.position.set(sv.x * sunRadius, Math.max(0.5, sv.y * sunRadius), sv.z * sunRadius);
 
       // Dynamically fit directional shadow camera to building height & spacing
-      const shadowHalf = Math.max(110, Math.min(1100, state.d * 0.75 + hs * 1.45 + 65));
+      const shadowHalf = Math.max(120, Math.min(1400, state.d * 0.80 + hs * 1.65 + 80));
       const lightDist  = Math.max(140, shadowHalf * 1.85);
       sunLight.position.set(sv.x * lightDist, Math.max(5, sv.y * lightDist), sv.z * lightDist);
       sunLight.shadow.camera.left   = -shadowHalf;
@@ -2132,17 +2169,25 @@
       document.getElementById('south-floors-panel').classList.toggle('hidden', state.sMode !== 'floors');
       document.getElementById('south-direct-panel').classList.toggle('hidden', state.sMode !== 'direct');
 
-      document.getElementById('slider-sdirect').value = state.sDirectH;
+      document.getElementById('slider-sdirect').value = hs;
       const inpSD = document.getElementById('input-sdirect');
-      if (document.activeElement !== inpSD) inpSD.value = state.sDirectH.toFixed(1);
+      if (document.activeElement !== inpSD) inpSD.value = hs.toFixed(1);
+
+      const estAptFloors = clamp(Math.round(hs / state.aptFH), 5, 100);
+      document.getElementById('slider-apt-floors').value = estAptFloors;
+      document.getElementById('val-apt-floors').textContent = `${estAptFloors}층`;
+      document.getElementById('slider-apt-fh').value = state.aptFH;
+      document.getElementById('val-apt-fh').textContent = `${state.aptFH.toFixed(1)} m`;
 
       document.getElementById('slider-sf').value = state.sf;
       document.getElementById('val-sf').textContent = `${state.sf}층`;
       document.getElementById('slider-ws').value = state.ws;
       document.getElementById('val-ws').textContent = `${state.ws} m`;
+      document.getElementById('slider-ds').value = state.ds;
+      document.getElementById('val-ds').textContent = `${state.ds} m`;
       document.getElementById('val-south-summary').textContent = state.sMode === 'floors'
-        ? `${state.sf}층 · 총 H ${hs.toFixed(1)}m`
-        : `직접설정 · 총 H ${hs.toFixed(1)}m`;
+        ? `교사동 ${state.sf}층 · H ${hs.toFixed(1)}m`
+        : `아파트·고층 · H ${hs.toFixed(1)}m`;
 
       document.getElementById('slider-nf').value = state.nf;
       document.getElementById('val-nf').textContent = `${state.nf}층`;
@@ -2303,6 +2348,7 @@
     });
 
     document.getElementById('slider-sdirect').addEventListener('input', e => {
+      state.sMode = 'direct';
       state.sDirectH = round1(clamp(parseFloat(e.target.value), MIN_DIRECT_H, MAX_DIRECT_H));
       fullUpdate();
     });
@@ -2310,30 +2356,62 @@
     inpSD.addEventListener('input', () => {
       const raw = parseFloat(inpSD.value);
       if (Number.isNaN(raw)) return;
+      state.sMode = 'direct';
       state.sDirectH = round1(clamp(raw, MIN_DIRECT_H, MAX_DIRECT_H));
       fullUpdate();
     });
     inpSD.addEventListener('blur', () => {
       const raw = parseFloat(inpSD.value);
-      state.sDirectH = Number.isNaN(raw) ? state.sDirectH : round1(clamp(raw, MIN_DIRECT_H, MAX_DIRECT_H));
-      inpSD.value = state.sDirectH.toFixed(1);
+      const valid = Number.isNaN(raw) ? getSouthHeight() : round1(clamp(raw, MIN_DIRECT_H, MAX_DIRECT_H));
+      if (state.sMode === 'direct') {
+        state.sDirectH = valid;
+      }
+      inpSD.value = getSouthHeight().toFixed(1);
       fullUpdate();
     });
+    inpSD.addEventListener('keydown', e => { if (e.key === 'Enter') inpSD.blur(); });
+    inpD.addEventListener('keydown', e => { if (e.key === 'Enter') inpD.blur(); });
+
     document.querySelectorAll('#sdirect-presets .mini-chip').forEach(btn => {
       btn.addEventListener('click', () => {
-        state.sDirectH = parseFloat(btn.dataset.sh);
+        const h = parseFloat(btn.dataset.sh);
+        if (Math.abs(h - 14) < 0.05) {
+          state.sMode = 'floors';
+          state.sf = 4;
+          state.sFloors = [3.5, 3.5, 3.5, 3.5];
+          state.sDirectH = 14.0;
+        } else {
+          state.sMode = 'direct';
+          state.sDirectH = round1(clamp(h, MIN_DIRECT_H, MAX_DIRECT_H));
+        }
         fullUpdate();
         fitCameraIso();
       });
     });
 
+    document.getElementById('slider-apt-floors').addEventListener('input', e => {
+      const fl = parseInt(e.target.value, 10);
+      state.sMode = 'direct';
+      state.sDirectH = round1(clamp(fl * state.aptFH, MIN_DIRECT_H, MAX_DIRECT_H));
+      fullUpdate();
+    });
+    document.getElementById('slider-apt-fh').addEventListener('input', e => {
+      state.aptFH = round1(parseFloat(e.target.value));
+      const fl = parseInt(document.getElementById('slider-apt-floors').value, 10);
+      state.sMode = 'direct';
+      state.sDirectH = round1(clamp(fl * state.aptFH, MIN_DIRECT_H, MAX_DIRECT_H));
+      fullUpdate();
+    });
+
     document.getElementById('slider-sf').addEventListener('input', e => {
+      state.sMode = 'floors';
       state.sf = parseInt(e.target.value, 10);
       state.sFloors = resizeFloors(state.sFloors, state.sf);
       state.sDirectH = round1(state.sFloors.reduce((a, b) => a + b, 0));
       fullUpdate();
     });
     document.getElementById('slider-ws').addEventListener('input', e => { state.ws = parseFloat(e.target.value); fullUpdate(); });
+    document.getElementById('slider-ds').addEventListener('input', e => { state.ds = parseFloat(e.target.value); fullUpdate(); });
     document.getElementById('slider-nf').addEventListener('input', e => {
       state.nf = parseInt(e.target.value, 10);
       state.nFloors = resizeFloors(state.nFloors, state.nf);
@@ -2431,8 +2509,8 @@
     }
 
     document.getElementById('btn-reset').addEventListener('click', () => {
-      state.sMode = 'floors'; state.sDirectH = 14.0;
-      state.sf = 4; state.sFloors = [3.5, 3.5, 3.5, 3.5]; state.ws = 48.0;
+      state.sMode = 'floors'; state.sDirectH = 14.0; state.aptFH = 3.0;
+      state.sf = 4; state.sFloors = [3.5, 3.5, 3.5, 3.5]; state.ws = 48.0; state.ds = 12.0;
       state.d = 22.0;
       state.nf = 4; state.nFloors = [3.5, 3.5, 3.5, 3.5]; state.wn = 48.0;
       state.theta = 0;
