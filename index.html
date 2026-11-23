@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>학교 일조·인동거리 3D 시뮬레이터 (현행 교육환경보호법 기준)</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --panel: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --pass: #10b981;
+      --pass-bg: #ecfdf5;
+      --pass-border: #a7f3d0;
+      --fail: #ef4444;
+      --fail-bg: #fef2f2;
+      --fail-border: #fecaca;
+      --sun: #f59e0b;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-size: 13px;
+    }
+
+    /* Top Header */
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .badge-law {
+      font-size: 11px;
+      font-weight: 600;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      padding: 2px 7px;
+      border-radius: 999px;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 11px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    /* Main Workspace */
+    .workspace {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* Left Viewport Area */
+    .viewport-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      position: relative;
+      background: #e9eff6;
+    }
+
+    /* Floating KPI Bar */
+    .kpi-overlay {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .kpi-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 8px 12px;
+      box-shadow: var(--shadow);
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 118px;
+    }
+
+    .kpi-card.status-pass {
+      background: rgba(236, 253, 245, 0.95);
+      border-color: var(--pass-border);
+    }
+    .kpi-card.status-fail {
+      background: rgba(254, 242, 242, 0.95);
+      border-color: var(--fail-border);
+    }
+
+    .kpi-label {
+      font-size: 10.5px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .status-pass .kpi-value { color: #047857; }
+    .status-fail .kpi-value { color: #b91c1c; }
+
+    .kpi-sub {
+      font-size: 10.5px;
+      color: var(--muted);
+    }
+
+    /* 3D Canvas Container */
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+      cursor: grab;
+    }
+    #canvas-container:active { cursor: grabbing; }
+
+    /* Legend & View Reset */
+    .viewport-tools {
+      position: absolute;
+      bottom: 84px;
+      left: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      z-index: 5;
+    }
+
+    .legend-pill {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(6px);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      box-shadow: var(--shadow);
+    }
+
+    .dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 2px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    /* Timeline Bar */
+    .timeline-bar {
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+      z-index: 6;
+    }
+
+    .play-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .play-btn:hover { background: var(--primary-hover); }
+
+    .time-readout {
+      min-width: 125px;
+      flex-shrink: 0;
+    }
+    .time-main {
+      font-size: 15px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+    .time-sun {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .slider-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .time-ticks {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      padding: 0 2px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    /* Right Control Sidebar */
+    aside {
+      width: 350px;
+      flex-shrink: 0;
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 14px;
+      gap: 14px;
+    }
+
+    .section {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 6px;
+    }
+
+    .seg-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
+      background: #f1f5f9;
+      padding: 3px;
+      border-radius: 8px;
+    }
+    .seg-group.cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+    .seg-btn {
+      border: none;
+      background: transparent;
+      padding: 6px 6px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .seg-btn.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    .control-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .control-val {
+      font-weight: 700;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 12px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 8px;
+      background: #f8fafc;
+      border-radius: 7px;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .toggle-row input {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .sub-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sub-box-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .sub-box-meta {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Inspector Card */
+    .inspector-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .inspector-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 12.5px;
+    }
+
+    .pill-status {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .pill-pass { background: var(--pass-bg); color: #047857; border: 1px solid var(--pass-border); }
+    .pill-fail { background: var(--fail-bg); color: #b91c1c; border: 1px solid var(--fail-border); }
+    .pill-ex { background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; }
+
+    .mini-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .mini-stat {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 8px;
+    }
+    .mini-stat-label { font-size: 10.5px; color: var(--muted); }
+    .mini-stat-val { font-size: 13.5px; font-weight: 800; margin-top: 2px; }
+
+    .sun-bar-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .sun-bar {
+      height: 14px;
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      background: #cbd5e1;
+      border: 1px solid #94a3b8;
+      position: relative;
+    }
+
+    .sun-bar-ref {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      border-left: 1.5px dashed #1d4ed8;
+      border-right: 1.5px dashed #1d4ed8;
+      pointer-events: none;
+    }
+
+    .disclaimer {
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--muted);
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #fff;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s ease;
+      z-index: 100;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 920px) {
+      body { height: auto; overflow: auto; }
+      .workspace { flex-direction: column; overflow: visible; }
+      .viewport-col { height: 62vh; min-height: 420px; }
+      aside { width: 100%; border-left: none; border-top: 1px solid var(--border); overflow: visible; }
+    }
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-title">
+        <span>학교 교사동 3D 일조·인동거리 시뮬레이터</span>
+        <span class="badge-law">교육부고시 제2019-176호 기준</span>
+      </div>
+      <div class="brand-sub">동짓날(12/22) 08:00~16:00 3차원 광선 교차 판정 · 개별 창문 / 옥외 체육장(3m 후퇴·10m 격자)</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="btn-share" title="현재 설정 조건이 포함된 웹 주소 복사">🔗 설정 링크 복사</button>
+      <button class="btn" id="btn-csv" title="전체 창문 또는 격자별 일조 판정 결과 CSV 저장">📊 결과 CSV</button>
+      <button class="btn btn-primary" id="btn-capture" title="현재 3D 시뮬레이션 화면 PNG 저장">📷 화면 캡처</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- Left 3D Viewport -->
+    <div class="viewport-col">
+      <div class="kpi-overlay">
+        <div class="kpi-card" id="kpi-status-card">
+          <span class="kpi-label">법정 기준 종합 판정</span>
+          <span class="kpi-value" id="kpi-verdict">-</span>
+          <span class="kpi-sub" id="kpi-rule-desc">총 4h 또는 09~13시 연속 2h</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">충족률 (충족 / 대상)</span>
+          <span class="kpi-value" id="kpi-rate">-</span>
+          <span class="kpi-sub" id="kpi-counts">-</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">현재 인동비 (D / H)</span>
+          <span class="kpi-value" id="kpi-ratio">-</span>
+          <span class="kpi-sub" id="kpi-dh-detail">-</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">최저 일조 지점</span>
+          <span class="kpi-value" id="kpi-worst">-</span>
+          <span class="kpi-sub" id="kpi-worst-label">-</span>
+        </div>
+      </div>
+
+      <div id="canvas-container"></div>
+
+      <div class="viewport-tools">
+        <div class="legend-pill">
+          <span><i class="dot" style="background:#10b981;"></i>법정 충족</span>
+          <span><i class="dot" style="background:#ef4444;"></i>일조 미달</span>
+          <span><i class="dot" style="background:#94a3b8;"></i>비거실 제외</span>
+        </div>
+        <button class="btn" id="btn-cam-iso">등각뷰</button>
+        <button class="btn" id="btn-cam-top">평면뷰</button>
+        <button class="btn" id="btn-cam-side">단면뷰</button>
+      </div>
+
+      <div class="timeline-bar">
+        <button class="play-btn" id="btn-play" title="재생 / 일시정지">▶</button>
+        <div class="time-readout">
+          <div class="time-main" id="time-display">12:00</div>
+          <div class="time-sun" id="sun-info">고도 29.1° · 방위 정남</div>
+        </div>
+        <div class="slider-wrap">
+          <input type="range" id="slider-time" min="8" max="16" step="0.05" value="12" />
+          <div class="time-ticks">
+            <span>08:00</span><span>09:00</span><span>10:00</span><span>11:00</span>
+            <span>12:00</span><span>13:00</span><span>14:00</span><span>15:00</span><span>16:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Control Sidebar -->
+    <aside>
+      <!-- Mode & School Level -->
+      <div class="section">
+        <div class="section-title">
+          <span>1. 분석 대상 및 학교급 기준</span>
+        </div>
+        <div class="seg-group" id="mode-group">
+          <button class="seg-btn active" data-mode="classroom">교사 창문 [별표 2]</button>
+          <button class="seg-btn" data-mode="field">옥외 체육장 격자</button>
+        </div>
+        <div class="seg-group cols-3" id="level-group">
+          <button class="seg-btn active" data-level="elem">유·초 (09~13시)</button>
+          <button class="seg-btn" data-level="mid">중학교 (09~14시)</button>
+          <button class="seg-btn" data-level="high">고교 (09~15시)</button>
+        </div>
+        <div class="control-row">
+          <div class="control-header">
+            <span>지역 위도·경도</span>
+            <span class="control-val" id="val-loc">37.5°N / 127.0°E</span>
+          </div>
+          <select id="select-region">
+            <option value="37.5,127.0" selected>경기도 · 서울 수도권 (37.5°N, 127.0°E)</option>
+            <option value="37.88,127.73">강원 · 춘천권 (37.88°N, 127.73°E)</option>
+            <option value="36.35,127.38">충청 · 대전·세종권 (36.35°N, 127.38°E)</option>
+            <option value="35.87,128.60">경북 · 대구권 (35.87°N, 128.60°E)</option>
+            <option value="35.16,126.85">전라 · 광주권 (35.16°N, 126.85°E)</option>
+            <option value="35.18,129.08">경남 · 부산권 (35.18°N, 129.08°E)</option>
+            <option value="33.50,126.53">제주권 (33.50°N, 126.53°E)</option>
+          </select>
+        </div>
+        <div class="seg-group" id="timemode-group">
+          <button class="seg-btn active" data-timemode="solar">진태양시 (분석표준)</button>
+          <button class="seg-btn" data-timemode="kst">한국표준시 (KST)</button>
+        </div>
+      </div>
+
+      <!-- Geometry Parameters -->
+      <div class="section">
+        <div class="section-title">
+          <span>2. 교사동 규모 및 배치</span>
+          <button class="btn" id="btn-reset" style="padding:2px 7px; font-size:11px;">초기화</button>
+        </div>
+
+        <div class="control-row">
+          <div class="control-header">
+            <span>남측 교사동 높이 (H)</span>
+            <span class="control-val" id="val-hs">14.0 m</span>
+          </div>
+          <input type="range" id="slider-hs" min="7" max="24" step="0.5" value="14" />
+        </div>
+
+        <div class="control-row">
+          <div class="control-header">
+            <span>교사동 간 인동거리 (D)</span>
+            <span class="control-val" id="val-d">22.0 m</span>
+          </div>
+          <input type="range" id="slider-d" min="10" max="45" step="0.5" value="22" />
+        </div>
+
+        <div class="control-row">
+          <div class="control-header">
+            <span>남측 교사동 길이 (Ws)</span>
+            <span class="control-val" id="val-ws">48 m</span>
+          </div>
+          <input type="range" id="slider-ws" min="16" max="80" step="4" value="48" />
+        </div>
+
+        <div class="control-row">
+          <div class="control-header">
+            <span>북측 교사동 층수 / 길이</span>
+            <span class="control-val" id="val-north">4층 / 48 m</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <input type="range" id="slider-nf" min="2" max="5" step="1" value="4" title="북측 동 층수" />
+            <input type="range" id="slider-wn" min="24" max="72" step="8" value="48" title="북측 동 길이" />
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-header">
+            <span>배치 방위각 (정남 0°)</span>
+            <span class="control-val" id="val-theta">0° (정남향)</span>
+          </div>
+          <input type="range" id="slider-theta" min="-45" max="45" step="5" value="0" />
+          <div class="seg-group cols-3" id="theta-presets" style="margin-top:4px;">
+            <button class="seg-btn" data-th="-30">남동 -30°</button>
+            <button class="seg-btn active" data-th="0">정남 0°</button>
+            <button class="seg-btn" data-th="30">남서 +30°</button>
+          </div>
+        </div>
+
+        <div class="sub-box" id="window-controls-box">
+          <div class="sub-box-header">
+            <span>북측 교사동 창문 사이즈</span>
+            <span class="sub-box-meta" id="val-win-summary">5.2×1.8m · 중심 +1.80m</span>
+          </div>
+
+          <div class="control-row">
+            <div class="control-header">
+              <span>창문 폭 (W)</span>
+              <span class="control-val" id="val-winw">5.2 m</span>
+            </div>
+            <input type="range" id="slider-winw" min="1.0" max="7.6" step="0.1" value="5.2" />
+          </div>
+
+          <div class="control-row">
+            <div class="control-header">
+              <span>창문 높이 (H)</span>
+              <span class="control-val" id="val-winh">1.8 m</span>
+            </div>
+            <input type="range" id="slider-winh" min="0.6" max="3.0" step="0.1" value="1.8" />
+          </div>
+
+          <div class="control-row">
+            <div class="control-header">
+              <span>창대 높이 (Sill)</span>
+              <span class="control-val" id="val-winsill">0.9 m</span>
+            </div>
+            <input type="range" id="slider-winsill" min="0.0" max="2.4" step="0.1" value="0.9" />
+          </div>
+
+          <div class="seg-group cols-3" id="win-presets">
+            <button class="seg-btn active" data-preset="std">표준 5.2×1.8</button>
+            <button class="seg-btn" data-preset="wide">전면창 6.8×2.2</button>
+            <button class="seg-btn" data-preset="high">고측창 5.2×1.0</button>
+          </div>
+
+          <div class="seg-group" id="wineval-group" title="창문 중심점(법정 표준) 또는 창면 5점 과반 수광 기준 선택">
+            <button class="seg-btn active" data-wineval="center">창문 중심점 (표준)</button>
+            <button class="seg-btn" data-wineval="grid5">창면 5점 (50%↑ 수광)</button>
+          </div>
+        </div>
+
+        <label class="toggle-row" id="row-ex1">
+          <span>북측 1층 전체 비거실·필로티 제외</span>
+          <input type="checkbox" id="check-ex1" />
+        </label>
+      </div>
+
+      <!-- Inspector -->
+      <div class="section">
+        <div class="section-title">
+          <span>3. 선택 지점 상세 분석</span>
+          <span style="font-size:10.5px; color:var(--muted); font-weight:500;">3D 창문·격자 클릭</span>
+        </div>
+        <div class="inspector-box" id="inspector-box">
+          <div class="inspector-header">
+            <span id="ins-name">지점을 클릭하세요</span>
+            <span class="pill-status pill-ex" id="ins-badge">미선택</span>
+          </div>
+          <div class="mini-stats">
+            <div class="mini-stat">
+              <div class="mini-stat-label">총 일조시간 (08~16시)</div>
+              <div class="mini-stat-val" id="ins-total">-</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label" id="ins-cont-label">연속 일조 (09~13시)</div>
+              <div class="mini-stat-val" id="ins-cont">-</div>
+            </div>
+          </div>
+          <div class="sun-bar-wrap">
+            <div style="display:flex; justify-content:space-between; font-size:10.5px; color:var(--muted);">
+              <span>08시</span><span>시간대별 일조 (점선: 기준시간)</span><span>16시</span>
+            </div>
+            <div class="sun-bar" id="ins-bar"></div>
+          </div>
+          <button class="btn" id="btn-toggle-room" style="display:none; justify-content:center;">
+            이 창문을 비거실(제외)로 전환
+          </button>
+        </div>
+      </div>
+
+      <div class="disclaimer">
+        <strong>법적 근거 및 유의사항</strong><br/>
+        • 「교육환경 보호에 관한 법률」 시행규칙 [별표 1] 및 「교육환경평가서 작성 등에 관한 고시」(교육부고시 제2019-176호) [별표 2] 기준을 반영한 사전 개략 검토 도구입니다.<br/>
+        • 교사 층고 3.5m, <span id="disc-win-spec">창문 5.2×1.8m(창대 0.9m, 중심 +1.80m)</span>, 동 깊이 12m 기준이며, 실제 교육환경평가 심의 시에는 주변 건축물·지형 고저차·실제 입면 개구부를 반영한 정밀 3D 해석이 필요합니다.
+      </div>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast">복사되었습니다.</div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // ---------- Constants & State ----------
+    const DEG2RAD = Math.PI / 180;
+    const RAD2DEG = 180 / Math.PI;
+    const DECLINATION = -23.44 * DEG2RAD; // Winter Solstice
+    const FLOOR_H = 3.5;
+    const WINDOW_CENTER_OFFSET = 1.8;
+    const BLDG_DEPTH = 12.0;
+    const BAY_WIDTH = 8.0;
+
+    // 2-minute intervals from 08:00 to 16:00 (240 bins = exact 8.0 hours)
+    const STEP_MIN = 2;
+    const NUM_STEPS = 480 / STEP_MIN; // 240
+    const STEP_HR = STEP_MIN / 60;
+
+    const LEVEL_RULES = {
+      elem: { name: '유·초', refStart: 9, refEnd: 13 },
+      mid:  { name: '중학교', refStart: 9, refEnd: 14 },
+      high: { name: '고교',   refStart: 9, refEnd: 15 }
+    };
+
+    const state = {
+      mode: 'classroom', // 'classroom' | 'field'
+      level: 'elem',     // 'elem' | 'mid' | 'high'
+      lat: 37.5,
+      lon: 127.0,
+      timeMode: 'solar', // 'solar' | 'kst'
+      hs: 14.0,
+      ws: 48.0,
+      d: 22.0,
+      nf: 4,
+      wn: 48.0,
+      theta: 0,          // degrees: -30 SE, 0 S, +30 SW
+      winW: 5.2,         // window width (m)
+      winH: 1.8,         // window height (m)
+      winSill: 0.9,      // window sill height from floor (m)
+      winEval: 'center', // 'center' | 'grid5'
+      ex1: false,        // exclude entire 1st floor
+      excludedIds: new Set(), // individual excluded windows
+      viewHour: 12.0,
+      playing: false,
+      selectedId: null
+    };
+
+    let currentResults = [];
+    let clickableMeshes = [];
+
+    // ---------- Parse URL Query Params ----------
+    function loadFromURL() {
+      const p = new URLSearchParams(window.location.search);
+      if (p.has('md') && ['classroom', 'field'].includes(p.get('md'))) state.mode = p.get('md');
+      if (p.has('lv') && LEVEL_RULES[p.get('lv')]) state.level = p.get('lv');
+      if (p.has('tm') && ['solar', 'kst'].includes(p.get('tm'))) state.timeMode = p.get('tm');
+      if (p.has('hs')) state.hs = clamp(parseFloat(p.get('hs')), 7, 24);
+      if (p.has('ws')) state.ws = clamp(parseFloat(p.get('ws')), 16, 80);
+      if (p.has('d'))  state.d  = clamp(parseFloat(p.get('d')), 10, 45);
+      if (p.has('nf')) state.nf = clamp(parseInt(p.get('nf'), 10), 2, 5);
+      if (p.has('wn')) state.wn = clamp(parseFloat(p.get('wn')), 24, 72);
+      if (p.has('th')) state.theta = clamp(parseFloat(p.get('th')), -45, 45);
+      if (p.has('ex1')) state.ex1 = p.get('ex1') === '1';
+      if (p.has('lat')) state.lat = clamp(parseFloat(p.get('lat')), 33, 39);
+      if (p.has('lon')) state.lon = clamp(parseFloat(p.get('lon')), 124, 131);
+      if (p.has('ww')) state.winW = clamp(parseFloat(p.get('ww')), 1.0, 7.6);
+      if (p.has('wh')) state.winH = clamp(parseFloat(p.get('wh')), 0.6, 3.0);
+      if (p.has('wsill')) state.winSill = clamp(parseFloat(p.get('wsill')), 0.0, 2.4);
+      if (p.has('wpt') && ['center', 'grid5'].includes(p.get('wpt'))) state.winEval = p.get('wpt');
+      enforceWindowBounds('winH');
+      if (p.has('exids')) {
+        p.get('exids').split(',').filter(Boolean).forEach(id => state.excludedIds.add(id));
+      }
+    }
+
+    function buildShareURL() {
+      const p = new URLSearchParams();
+      p.set('md', state.mode);
+      p.set('lv', state.level);
+      p.set('tm', state.timeMode);
+      p.set('hs', state.hs);
+      p.set('ws', state.ws);
+      p.set('d', state.d);
+      p.set('nf', state.nf);
+      p.set('wn', state.wn);
+      p.set('th', state.theta);
+      p.set('ex1', state.ex1 ? '1' : '0');
+      p.set('lat', state.lat);
+      p.set('lon', state.lon);
+      p.set('ww', state.winW.toFixed(1));
+      p.set('wh', state.winH.toFixed(1));
+      p.set('wsill', state.winSill.toFixed(1));
+      p.set('wpt', state.winEval);
+      if (state.excludedIds.size > 0) {
+        p.set('exids', Array.from(state.excludedIds).join(','));
+      }
+      return `${window.location.origin}${window.location.pathname}?${p.toString()}`;
+    }
+
+    function clamp(v, lo, hi) {
+      return Number.isNaN(v) ? lo : Math.min(hi, Math.max(lo, v));
+    }
+
+    function round1(v) {
+      return Math.round(v * 10) / 10;
+    }
+
+    function enforceWindowBounds(changedField) {
+      const maxTop = FLOOR_H - 0.1; // 3.4m ceiling limit
+      state.winW = round1(clamp(state.winW, 1.0, BAY_WIDTH - 0.4));
+      state.winH = round1(clamp(state.winH, 0.6, 3.0));
+      state.winSill = round1(clamp(state.winSill, 0.0, 2.4));
+      if (state.winSill + state.winH > maxTop) {
+        if (changedField === 'winSill') {
+          state.winH = round1(Math.max(0.6, maxTop - state.winSill));
+          if (state.winSill + state.winH > maxTop) {
+            state.winSill = round1(maxTop - state.winH);
+          }
+        } else {
+          state.winSill = round1(Math.max(0.0, maxTop - state.winH));
+          if (state.winSill + state.winH > maxTop) {
+            state.winH = round1(maxTop - state.winSill);
+          }
+        }
+      }
+    }
+
+    // ---------- Solar Position Math ----------
+    // World Coords: +X = East, +Y = Up, +Z = South (-Z = North)
+    function getSunWorldVector(hour) {
+      let tSolar = hour;
+      if (state.timeMode === 'kst') {
+        // KST standard meridian is 135°E; 4 min per degree
+        tSolar = hour - (135.0 - state.lon) / 15.0;
+      }
+      const omega = 15.0 * (tSolar - 12.0) * DEG2RAD;
+      const phi = state.lat * DEG2RAD;
+
+      const sinD = Math.sin(DECLINATION);
+      const cosD = Math.cos(DECLINATION);
+      const sinP = Math.sin(phi);
+      const cosP = Math.cos(phi);
+      const sinW = Math.sin(omega);
+      const cosW = Math.cos(omega);
+
+      const x = -cosD * sinW;                       // East (+)
+      const y = sinP * sinD + cosP * cosD * cosW;   // Up (+)
+      const z = sinP * cosD * cosW - cosP * sinD;   // South (+)
+
+      const altDeg = Math.asin(clamp(y, -1, 1)) * RAD2DEG;
+      // Azimuth from South: East negative, West positive
+      const azDeg = Math.atan2(-x, z) * RAD2DEG;
+
+      return { x, y, z, altDeg, azDeg };
+    }
+
+    function worldToLocalDir(v, thetaDeg) {
+      const th = thetaDeg * DEG2RAD;
+      const c = Math.cos(th);
+      const s = Math.sin(th);
+      return {
+        x: v.x * c + v.z * s,
+        y: v.y,
+        z: -v.x * s + v.z * c
+      };
+    }
+
+    // Analytical Ray-AABB intersection (t > 0)
+    function rayIntersectsAABB(ox, oy, oz, dx, dy, dz, box) {
+      let tmin = -Infinity;
+      let tmax = Infinity;
+
+      const axes = [
+        [ox, dx, box.minX, box.maxX],
+        [oy, dy, box.minY, box.maxY],
+        [oz, dz, box.minZ, box.maxZ]
+      ];
+
+      for (let i = 0; i < 3; i++) {
+        const [o, d, bmin, bmax] = axes[i];
+        if (Math.abs(d) < 1e-8) {
+          if (o < bmin || o > bmax) return false;
+        } else {
+          let t1 = (bmin - o) / d;
+          let t2 = (bmax - o) / d;
+          if (t1 > t2) { const tmp = t1; t1 = t2; t2 = tmp; }
+          if (t1 > tmin) tmin = t1;
+          if (t2 < tmax) tmax = t2;
+          if (tmin > tmax) return false;
+        }
+      }
+      return tmax > 1e-4 && tmin < tmax && (tmin > 1e-4 || tmax > 1e-4);
+    }
+
+    // ---------- Sunlight Analysis Engine ----------
+    function runAnalysis() {
+      const rule = LEVEL_RULES[state.level];
+      const reqTotal = state.mode === 'classroom' ? 4.0 : 2.0;
+      const reqCont  = state.mode === 'classroom' ? 2.0 : 1.0;
+
+      // Precompute sun local directions for all 240 steps
+      const sunSteps = new Array(NUM_STEPS);
+      for (let i = 0; i < NUM_STEPS; i++) {
+        const h = 8.0 + (i + 0.5) * STEP_HR;
+        const sw = getSunWorldVector(h);
+        const sl = worldToLocalDir(sw, state.theta);
+        sunSteps[i] = { h, sl };
+      }
+
+      const southBox = {
+        minX: -state.ws / 2, maxX: state.ws / 2,
+        minY: 0,             maxY: state.hs,
+        minZ: state.d / 2,   maxZ: state.d / 2 + BLDG_DEPTH
+      };
+      const hn = state.nf * FLOOR_H;
+      const northBox = {
+        minX: -state.wn / 2,            maxX: state.wn / 2,
+        minY: 0,                        maxY: hn,
+        minZ: -state.d / 2 - BLDG_DEPTH, maxZ: -state.d / 2
+      };
+
+      const refStartIdx = Math.round((rule.refStart - 8) * (60 / STEP_MIN));
+      const refEndIdx   = Math.round((rule.refEnd - 8) * (60 / STEP_MIN));
+
+      const results = [];
+
+      if (state.mode === 'classroom') {
+        const cols = Math.round(state.wn / BAY_WIDTH);
+        const winCenterOffset = state.winSill + state.winH / 2;
+        const dxOff = state.winW * 0.35;
+        const dyOff = state.winH * 0.35;
+
+        for (let f = 1; f <= state.nf; f++) {
+          const y = (f - 1) * FLOOR_H + winCenterOffset;
+          for (let c = 0; c < cols; c++) {
+            const x = -state.wn / 2 + (c + 0.5) * BAY_WIDTH;
+            const z = -state.d / 2 + 0.05;
+            const id = `F${f}-R${c + 1}`;
+            const label = `${f}층 ${c + 1}호실 창문`;
+            const excluded = (state.ex1 && f === 1) || state.excludedIds.has(id);
+
+            const samplePts = state.winEval === 'grid5'
+              ? [
+                  [x, y],
+                  [x - dxOff, y - dyOff],
+                  [x + dxOff, y - dyOff],
+                  [x - dxOff, y + dyOff],
+                  [x + dxOff, y + dyOff]
+                ]
+              : [[x, y]];
+
+            const timeline = new Uint8Array(NUM_STEPS);
+            let totalSteps = 0;
+            let curCont = 0;
+            let maxCont = 0;
+
+            for (let i = 0; i < NUM_STEPS; i++) {
+              const { sl } = sunSteps[i];
+              // Sunlight enters south-facing window if sun above horizon, in front of facade, and not blocked by South building
+              let lit = false;
+              if (sl.y > 0.001 && sl.z > 0.001) {
+                if (state.winEval === 'center') {
+                  if (!rayIntersectsAABB(x, y, z, sl.x, sl.y, sl.z, southBox)) {
+                    lit = true;
+                  }
+                } else {
+                  let litPts = 0;
+                  for (let pIdx = 0; pIdx < samplePts.length; pIdx++) {
+                    const [px, py] = samplePts[pIdx];
+                    if (!rayIntersectsAABB(px, py, z, sl.x, sl.y, sl.z, southBox)) {
+                      litPts++;
+                    }
+                  }
+                  if (litPts >= 3) lit = true; // >= 50% of 5 sample points
+                }
+              }
+              timeline[i] = lit ? 1 : 0;
+              if (lit) totalSteps++;
+              if (i >= refStartIdx && i < refEndIdx) {
+                if (lit) {
+                  curCont++;
+                  if (curCont > maxCont) maxCont = curCont;
+                } else {
+                  curCont = 0;
+                }
+              }
+            }
+
+            const totalHrs = totalSteps * STEP_HR;
+            const contHrs  = maxCont * STEP_HR;
+            const pass = (totalHrs >= reqTotal - 1e-6) || (contHrs >= reqCont - 1e-6);
+
+            results.push({
+              id, label, floor: f, col: c + 1,
+              x, y, z, w: state.winW, h: state.winH,
+              winCenterY: winCenterOffset,
+              totalHrs, contHrs, pass, excluded, timeline
+            });
+          }
+        }
+      } else {
+        // Athletic field: courtyard between buildings with 3m setback, <=10m grid centered
+        const fieldW = Math.max(state.ws, state.wn, 48);
+        const fieldD = state.d;
+        const innerW = Math.max(2, fieldW - 6.0);
+        const innerD = Math.max(2, fieldD - 6.0);
+        const cols = Math.max(1, Math.ceil(innerW / 10.0));
+        const rows = Math.max(1, Math.ceil(innerD / 10.0));
+        const cellW = innerW / cols;
+        const cellD = innerD / rows;
+
+        for (let r = 0; r < rows; r++) {
+          // Row 1 closest to North building, Row N closest to South building
+          const z = -innerD / 2 + (r + 0.5) * cellD;
+          for (let c = 0; c < cols; c++) {
+            const x = -innerW / 2 + (c + 0.5) * cellW;
+            const y = 0.05;
+            const id = `G${r + 1}-${c + 1}`;
+            const label = `체육장 격자 (${r + 1}열-${c + 1}칸)`;
+
+            const timeline = new Uint8Array(NUM_STEPS);
+            let totalSteps = 0;
+            let curCont = 0;
+            let maxCont = 0;
+
+            for (let i = 0; i < NUM_STEPS; i++) {
+              const { sl } = sunSteps[i];
+              let lit = false;
+              if (sl.y > 0.001) {
+                const hitS = rayIntersectsAABB(x, y, z, sl.x, sl.y, sl.z, southBox);
+                const hitN = rayIntersectsAABB(x, y, z, sl.x, sl.y, sl.z, northBox);
+                if (!hitS && !hitN) lit = true;
+              }
+              timeline[i] = lit ? 1 : 0;
+              if (lit) totalSteps++;
+              if (i >= refStartIdx && i < refEndIdx) {
+                if (lit) {
+                  curCont++;
+                  if (curCont > maxCont) maxCont = curCont;
+                } else {
+                  curCont = 0;
+                }
+              }
+            }
+
+            const totalHrs = totalSteps * STEP_HR;
+            const contHrs  = maxCont * STEP_HR;
+            const pass = (totalHrs >= reqTotal - 1e-6) || (contHrs >= reqCont - 1e-6);
+
+            results.push({
+              id, label, row: r + 1, col: c + 1,
+              x, y, z, cellW, cellD, fieldW, fieldD, innerW, innerD,
+              totalHrs, contHrs, pass, excluded: false, timeline
+            });
+          }
+        }
+      }
+
+      currentResults = results;
+      // Preserve selection if still exists, otherwise pick first failing or first item
+      if (!results.some(r => r.id === state.selectedId)) {
+        const firstFail = results.find(r => !r.excluded && !r.pass);
+        state.selectedId = firstFail ? firstFail.id : (results[0] ? results[0].id : null);
+      }
+      return results;
+    }
+
+    // ---------- Three.js Scene Setup ----------
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xeef3f8);
+    scene.fog = new THREE.Fog(0xeef3f8, 180, 420);
+
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.5, 600);
+    camera.position.set(58, 46, 62);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.07;
+    controls.maxPolarAngle = Math.PI / 2 - 0.02;
+    controls.minDistance = 20;
+    controls.maxDistance = 240;
+    controls.target.set(0, 6, 0);
+
+    // Lighting
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcbd5e1, 0.65);
+    scene.add(hemiLight);
+
+    const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.55);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.camera.near = 10;
+    sunLight.shadow.camera.far = 260;
+    const sc = 85;
+    sunLight.shadow.camera.left = -sc;
+    sunLight.shadow.camera.right = sc;
+    sunLight.shadow.camera.top = sc;
+    sunLight.shadow.camera.bottom = -sc;
+    sunLight.shadow.bias = -0.0005;
+    scene.add(sunLight);
+
+    // Ground & World Compass
+    const groundGeo = new THREE.PlaneGeometry(400, 400);
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.95 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    const gridHelper = new THREE.GridHelper(180, 36, 0xcbd5e1, 0xdbe4ee);
+    gridHelper.position.y = 0.01;
+    scene.add(gridHelper);
+
+    // World Groups
+    const compassGroup = new THREE.Group();
+    scene.add(compassGroup);
+
+    const sunArcGroup = new THREE.Group();
+    scene.add(sunArcGroup);
+
+    const campusGroup = new THREE.Group();
+    scene.add(campusGroup);
+
+    // Sun visual sphere
+    const sunSphere = new THREE.Mesh(
+      new THREE.SphereGeometry(2.6, 24, 24),
+      new THREE.MeshBasicMaterial({ color: 0xf59e0b })
+    );
+    scene.add(sunSphere);
+
+    const sunHalo = new THREE.Mesh(
+      new THREE.SphereGeometry(4.0, 24, 24),
+      new THREE.MeshBasicMaterial({ color: 0xfde68a, transparent: true, opacity: 0.35 })
+    );
+    sunSphere.add(sunHalo);
+
+    // Helper: Text Sprite
+    function createTextSprite(text, bgColor = 'rgba(15,23,42,0.82)', textColor = '#ffffff', scale = 1.0) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 256;
+      canvas.height = 80;
+      ctx.font = 'bold 34px Pretendard, Malgun Gothic, sans-serif';
+      const w = Math.min(240, ctx.measureText(text).width + 36);
+      const x = (256 - w) / 2;
+      ctx.fillStyle = bgColor;
+      ctx.beginPath();
+      ctx.roundRect(x, 14, w, 52, 14);
+      ctx.fill();
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 128, 41);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+      const sprite = new THREE.Sprite(mat);
+      sprite.scale.set(11 * scale, 3.4 * scale, 1);
+      return sprite;
+    }
+
+    function buildCompass() {
+      const r = 64;
+      const ringGeo = new THREE.RingGeometry(r - 0.3, r, 96);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8, side: THREE.DoubleSide, transparent: true, opacity: 0.45 });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.y = 0.03;
+      compassGroup.add(ring);
+
+      const dirs = [
+        { t: '북 (N)', x: 0, z: -r - 4, bg: '#1e293b' },
+        { t: '남 (S)', x: 0, z: r + 4,  bg: '#dc2626' },
+        { t: '동 (E)', x: r + 4, z: 0,  bg: '#475569' },
+        { t: '서 (W)', x: -r - 4, z: 0, bg: '#475569' }
+      ];
+      dirs.forEach(d => {
+        const sp = createTextSprite(d.t, d.bg, '#ffffff', 0.9);
+        sp.position.set(d.x, 1.5, d.z);
+        compassGroup.add(sp);
+      });
+    }
+    buildCompass();
+
+    function rebuildSunArc() {
+      while (sunArcGroup.children.length) {
+        const c = sunArcGroup.children.pop();
+        if (c.geometry) c.geometry.dispose();
+        if (c.material) c.material.dispose();
+      }
+      const radius = 78;
+      const pts = [];
+      for (let h = 8.0; h <= 16.001; h += 0.1) {
+        const sv = getSunWorldVector(h);
+        if (sv.y > 0) {
+          pts.push(new THREE.Vector3(sv.x * radius, sv.y * radius, sv.z * radius));
+        }
+      }
+      if (pts.length > 1) {
+        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat = new THREE.LineDashedMaterial({ color: 0xf59e0b, dashSize: 2.2, gapSize: 1.4 });
+        const line = new THREE.Line(geo, mat);
+        line.computeLineDistances();
+        sunArcGroup.add(line);
+      }
+      // Hour markers 09, 12, 15
+      [9, 12, 15].forEach(h => {
+        const sv = getSunWorldVector(h);
+        if (sv.y > 0) {
+          const sp = createTextSprite(`${h}시`, 'rgba(245,158,11,0.9)', '#ffffff', 0.65);
+          sp.position.set(sv.x * (radius + 4), sv.y * (radius + 4) + 2, sv.z * (radius + 4));
+          sunArcGroup.add(sp);
+        }
+      });
+    }
+
+    function clearGroup(grp) {
+      while (grp.children.length) {
+        const child = grp.children.pop();
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          if (Array.isArray(child.material)) child.material.forEach(m => m.dispose());
+          else child.material.dispose();
+        }
+      }
+    }
+
+    // ---------- Build 3D Campus ----------
+    function rebuildCampus() {
+      clearGroup(campusGroup);
+      clickableMeshes = [];
+
+      // Rotate campus so theta=-30 (SE) rotates +30° around Y
+      campusGroup.rotation.y = -state.theta * DEG2RAD;
+
+      const hn = state.nf * FLOOR_H;
+
+      // Materials
+      const southMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.72, metalness: 0.05 });
+      const northMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.65, metalness: 0.02 });
+      const edgeMat  = new THREE.LineBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.45 });
+
+      // South Building (Shadow Caster)
+      const sGeo = new THREE.BoxGeometry(state.ws, state.hs, BLDG_DEPTH);
+      const sMesh = new THREE.Mesh(sGeo, southMat);
+      sMesh.position.set(0, state.hs / 2, state.d / 2 + BLDG_DEPTH / 2);
+      sMesh.castShadow = true;
+      sMesh.receiveShadow = true;
+      campusGroup.add(sMesh);
+      const sEdge = new THREE.LineSegments(new THREE.EdgesGeometry(sGeo), edgeMat);
+      sEdge.position.copy(sMesh.position);
+      campusGroup.add(sEdge);
+
+      const sLabel = createTextSprite(`남측 교사동 (H=${state.hs}m)`, 'rgba(51,65,85,0.88)', '#ffffff', 0.85);
+      sLabel.position.set(0, state.hs + 3.2, state.d / 2 + BLDG_DEPTH / 2);
+      campusGroup.add(sLabel);
+
+      // North Building (Target)
+      const nGeo = new THREE.BoxGeometry(state.wn, hn, BLDG_DEPTH);
+      const nMesh = new THREE.Mesh(nGeo, northMat);
+      nMesh.position.set(0, hn / 2, -state.d / 2 - BLDG_DEPTH / 2);
+      nMesh.castShadow = true;
+      nMesh.receiveShadow = true;
+      campusGroup.add(nMesh);
+      const nEdge = new THREE.LineSegments(new THREE.EdgesGeometry(nGeo), edgeMat);
+      nEdge.position.copy(nMesh.position);
+      campusGroup.add(nEdge);
+
+      const nLabel = createTextSprite(`북측 교사동 (${state.nf}층, ${hn.toFixed(1)}m)`, 'rgba(37,99,235,0.9)', '#ffffff', 0.85);
+      nLabel.position.set(0, hn + 3.2, -state.d / 2 - BLDG_DEPTH / 2);
+      campusGroup.add(nLabel);
+
+      // Floor slab lines on North Building south face
+      for (let f = 1; f < state.nf; f++) {
+        const ly = f * FLOOR_H;
+        const pts = [
+          new THREE.Vector3(-state.wn / 2, ly, -state.d / 2 + 0.03),
+          new THREE.Vector3(state.wn / 2, ly, -state.d / 2 + 0.03)
+        ];
+        campusGroup.add(new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints(pts),
+          new THREE.LineBasicMaterial({ color: 0xcbd5e1 })
+        ));
+      }
+
+      // Dimension Line for D (on East side of gap)
+      const dimX = Math.max(state.ws, state.wn) / 2 + 5;
+      const dimPts = [
+        new THREE.Vector3(dimX, 0.25, -state.d / 2),
+        new THREE.Vector3(dimX, 0.25, state.d / 2)
+      ];
+      campusGroup.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(dimPts),
+        new THREE.LineBasicMaterial({ color: 0x2563eb })
+      ));
+      [-state.d / 2, state.d / 2].forEach(zPos => {
+        campusGroup.add(new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(dimX - 1.5, 0.25, zPos),
+            new THREE.Vector3(dimX + 1.5, 0.25, zPos)
+          ]),
+          new THREE.LineBasicMaterial({ color: 0x2563eb })
+        ));
+      });
+      const dLabel = createTextSprite(`D = ${state.d}m (${(state.d / state.hs).toFixed(2)}H)`, 'rgba(37,99,235,0.92)', '#ffffff', 0.82);
+      dLabel.position.set(dimX + 4.5, 2.2, 0);
+      campusGroup.add(dLabel);
+
+      // Render Analysis Results (Windows or Athletic Field Grid)
+      if (state.mode === 'classroom') {
+        currentResults.forEach(r => {
+          let color = 0x10b981;
+          let opacity = 0.92;
+          if (r.excluded) {
+            color = 0x94a3b8;
+            opacity = 0.55;
+          } else if (!r.pass) {
+            color = 0xef4444;
+          }
+
+          const isSel = r.id === state.selectedId;
+          const wGeo = new THREE.PlaneGeometry(r.w, r.h);
+          const wMat = new THREE.MeshBasicMaterial({
+            color,
+            transparent: true,
+            opacity,
+            side: THREE.DoubleSide
+          });
+          const wMesh = new THREE.Mesh(wGeo, wMat);
+          wMesh.position.set(r.x, r.y, -state.d / 2 + 0.08);
+          wMesh.userData.resultId = r.id;
+          campusGroup.add(wMesh);
+          clickableMeshes.push(wMesh);
+
+          // Selection border
+          const bColor = isSel ? 0x0f172a : 0xffffff;
+          const border = new THREE.LineSegments(
+            new THREE.EdgesGeometry(wGeo),
+            new THREE.LineBasicMaterial({ color: bColor })
+          );
+          border.position.set(r.x, r.y, -state.d / 2 + (isSel ? 0.14 : 0.09));
+          if (isSel) border.scale.set(1.06, 1.12, 1);
+          campusGroup.add(border);
+
+          if (isSel) {
+            const dxOff = r.w * 0.35;
+            const dyOff = r.h * 0.35;
+            const dotCoords = state.winEval === 'grid5'
+              ? [[0, 0], [-dxOff, -dyOff], [dxOff, -dyOff], [-dxOff, dyOff], [dxOff, dyOff]]
+              : [[0, 0]];
+            const dotGeo = new THREE.CircleGeometry(0.16, 12);
+            const dotMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
+            dotCoords.forEach(([ox, oy]) => {
+              const dotMesh = new THREE.Mesh(dotGeo, dotMat);
+              dotMesh.position.set(r.x + ox, r.y + oy, -state.d / 2 + 0.16);
+              campusGroup.add(dotMesh);
+            });
+          }
+        });
+      } else {
+        // Athletic field boundary + 3m setback line + Grid cells
+        const first = currentResults[0];
+        if (first) {
+          // Outer field boundary
+          const fw = first.fieldW, fd = first.fieldD;
+          const outerPts = [
+            new THREE.Vector3(-fw/2, 0.06, -fd/2),
+            new THREE.Vector3( fw/2, 0.06, -fd/2),
+            new THREE.Vector3( fw/2, 0.06,  fd/2),
+            new THREE.Vector3(-fw/2, 0.06,  fd/2),
+            new THREE.Vector3(-fw/2, 0.06, -fd/2)
+          ];
+          campusGroup.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(outerPts),
+            new THREE.LineBasicMaterial({ color: 0x64748b })
+          ));
+
+          // 3m Setback dashed line
+          const iw = first.innerW, id = first.innerD;
+          const setPts = [
+            new THREE.Vector3(-iw/2, 0.12, -id/2),
+            new THREE.Vector3( iw/2, 0.12, -id/2),
+            new THREE.Vector3( iw/2, 0.12,  id/2),
+            new THREE.Vector3(-iw/2, 0.12,  id/2),
+            new THREE.Vector3(-iw/2, 0.12, -id/2)
+          ];
+          const setLine = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(setPts),
+            new THREE.LineDashedMaterial({ color: 0x2563eb, dashSize: 1.2, gapSize: 0.8 })
+          );
+          setLine.computeLineDistances();
+          campusGroup.add(setLine);
+        }
+
+        currentResults.forEach(r => {
+          const isSel = r.id === state.selectedId;
+          const gGeo = new THREE.PlaneGeometry(r.cellW * 0.92, r.cellD * 0.92);
+          const gMat = new THREE.MeshBasicMaterial({
+            color: r.pass ? 0x10b981 : 0xef4444,
+            transparent: true,
+            opacity: isSel ? 0.78 : 0.42,
+            side: THREE.DoubleSide
+          });
+          const gMesh = new THREE.Mesh(gGeo, gMat);
+          gMesh.rotation.x = -Math.PI / 2;
+          gMesh.position.set(r.x, 0.09, r.z);
+          gMesh.userData.resultId = r.id;
+          campusGroup.add(gMesh);
+          clickableMeshes.push(gMesh);
+
+          if (isSel) {
+            const border = new THREE.LineSegments(
+              new THREE.EdgesGeometry(gGeo),
+              new THREE.LineBasicMaterial({ color: 0x0f172a })
+            );
+            border.rotation.x = -Math.PI / 2;
+            border.position.set(r.x, 0.14, r.z);
+            campusGroup.add(border);
+          }
+        });
+      }
+    }
+
+    function updateSunPosition() {
+      const sv = getSunWorldVector(state.viewHour);
+      const dist = 78;
+      sunSphere.position.set(sv.x * dist, Math.max(0.5, sv.y * dist), sv.z * dist);
+      sunLight.position.set(sv.x * 110, Math.max(2, sv.y * 110), sv.z * 110);
+      sunLight.intensity = sv.y > 0.02 ? Math.min(1.65, 0.7 + sv.y * 1.8) : 0.05;
+
+      // Update time text
+      const hh = Math.floor(state.viewHour);
+      const mm = Math.round((state.viewHour - hh) * 60);
+      const dispH = mm === 60 ? hh + 1 : hh;
+      const dispM = mm === 60 ? 0 : mm;
+      const modeTag = state.timeMode === 'solar' ? '진태양시' : 'KST';
+      document.getElementById('time-display').textContent =
+        `${String(dispH).padStart(2, '0')}:${String(dispM).padStart(2, '0')} (${modeTag})`;
+
+      const azText = Math.abs(sv.azDeg) < 1 ? '정남' : (sv.azDeg < 0 ? `남동 ${Math.abs(sv.azDeg).toFixed(0)}°` : `남서 ${sv.azDeg.toFixed(0)}°`);
+      document.getElementById('sun-info').textContent =
+        sv.altDeg > 0 ? `태양고도 ${sv.altDeg.toFixed(1)}° · 방위 ${azText}` : '일출 전 / 일몰 후';
+    }
+
+    // ---------- UI Updates ----------
+    function updateDashboard() {
+      const rule = LEVEL_RULES[state.level];
+      const activeItems = currentResults.filter(r => !r.excluded);
+      const passCount = activeItems.filter(r => r.pass).length;
+      const totalCount = activeItems.length;
+      const failCount = totalCount - passCount;
+      const rate = totalCount > 0 ? (passCount / totalCount) * 100 : 100;
+      const allPass = failCount === 0 && totalCount > 0;
+
+      const statusCard = document.getElementById('kpi-status-card');
+      statusCard.className = 'kpi-card ' + (allPass ? 'status-pass' : 'status-fail');
+      document.getElementById('kpi-verdict').textContent =
+        totalCount === 0 ? '대상 없음' : (allPass ? '전 지점 적합' : `기준 미달 (${failCount}곳)`);
+      document.getElementById('kpi-rule-desc').textContent = state.mode === 'classroom'
+        ? `총 4h 또는 ${rule.refStart}~${rule.refEnd}시 연속 2h`
+        : `총 2h 또는 ${rule.refStart}~${rule.refEnd}시 연속 1h`;
+
+      document.getElementById('kpi-rate').textContent = `${rate.toFixed(1)}%`;
+      const exCount = currentResults.length - totalCount;
+      document.getElementById('kpi-counts').textContent =
+        `충족 ${passCount} / 대상 ${totalCount}` + (exCount > 0 ? ` (제외 ${exCount})` : '');
+
+      document.getElementById('kpi-ratio').textContent = `${(state.d / state.hs).toFixed(2)} H`;
+      document.getElementById('kpi-dh-detail').textContent = `D ${state.d}m / H ${state.hs}m`;
+
+      if (activeItems.length > 0) {
+        let worst = activeItems[0];
+        activeItems.forEach(item => {
+          if (item.totalHrs < worst.totalHrs || (item.totalHrs === worst.totalHrs && item.contHrs < worst.contHrs)) {
+            worst = item;
+          }
+        });
+        document.getElementById('kpi-worst').textContent = `총 ${worst.totalHrs.toFixed(2)}h`;
+        document.getElementById('kpi-worst-label').textContent = `${worst.label} (연속 ${worst.contHrs.toFixed(2)}h)`;
+      } else {
+        document.getElementById('kpi-worst').textContent = '-';
+        document.getElementById('kpi-worst-label').textContent = '평가 대상 없음';
+      }
+
+      updateInspector();
+    }
+
+    function updateInspector() {
+      const item = currentResults.find(r => r.id === state.selectedId);
+      const rule = LEVEL_RULES[state.level];
+      document.getElementById('ins-cont-label').textContent = `연속 일조 (${rule.refStart}~${rule.refEnd}시)`;
+
+      const btnToggleRoom = document.getElementById('btn-toggle-room');
+
+      if (!item) {
+        document.getElementById('ins-name').textContent = '지점을 클릭하세요';
+        document.getElementById('ins-badge').textContent = '미선택';
+        document.getElementById('ins-badge').className = 'pill-status pill-ex';
+        document.getElementById('ins-total').textContent = '-';
+        document.getElementById('ins-cont').textContent = '-';
+        document.getElementById('ins-bar').innerHTML = '';
+        btnToggleRoom.style.display = 'none';
+        return;
+      }
+
+      document.getElementById('ins-name').textContent = item.label;
+      const badge = document.getElementById('ins-badge');
+      if (item.excluded) {
+        badge.textContent = '비거실 제외';
+        badge.className = 'pill-status pill-ex';
+      } else if (item.pass) {
+        badge.textContent = '법정 충족';
+        badge.className = 'pill-status pill-pass';
+      } else {
+        badge.textContent = '일조 미달';
+        badge.className = 'pill-status pill-fail';
+      }
+
+      document.getElementById('ins-total').textContent = `${item.totalHrs.toFixed(2)} 시간`;
+      document.getElementById('ins-cont').textContent = `${item.contHrs.toFixed(2)} 시간`;
+
+      // Render 48-block (10-min aggregated) timeline bar for crisp DOM performance
+      const bar = document.getElementById('ins-bar');
+      let html = '';
+      for (let b = 0; b < 48; b++) {
+        let sum = 0;
+        for (let k = 0; k < 5; k++) sum += item.timeline[b * 5 + k];
+        const ratio = sum / 5;
+        const bg = ratio >= 0.6 ? '#f59e0b' : (ratio > 0.1 ? '#fcd34d' : '#cbd5e1');
+        html += `<div style="flex:1; background:${bg};"></div>`;
+      }
+      const leftPct = ((rule.refStart - 8) / 8) * 100;
+      const widthPct = ((rule.refEnd - rule.refStart) / 8) * 100;
+      html += `<div class="sun-bar-ref" style="left:${leftPct}%; width:${widthPct}%;"></div>`;
+      bar.innerHTML = html;
+
+      if (state.mode === 'classroom') {
+        btnToggleRoom.style.display = 'inline-flex';
+        const isManualEx = state.excludedIds.has(item.id);
+        if (state.ex1 && item.floor === 1) {
+          btnToggleRoom.textContent = '1층 전체 제외 적용 중';
+          btnToggleRoom.disabled = true;
+        } else {
+          btnToggleRoom.disabled = false;
+          btnToggleRoom.textContent = isManualEx ? '이 창문을 거실(평가대상)로 복원' : '이 창문을 비거실(화장실·계단 등)로 제외';
+        }
+      } else {
+        btnToggleRoom.style.display = 'none';
+      }
+    }
+
+    function syncControlsUI() {
+      document.getElementById('slider-hs').value = state.hs;
+      document.getElementById('val-hs').textContent = `${state.hs.toFixed(1)} m`;
+
+      document.getElementById('slider-d').value = state.d;
+      document.getElementById('val-d').textContent = `${state.d.toFixed(1)} m`;
+
+      document.getElementById('slider-ws').value = state.ws;
+      document.getElementById('val-ws').textContent = `${state.ws} m`;
+
+      document.getElementById('slider-nf').value = state.nf;
+      document.getElementById('slider-wn').value = state.wn;
+      document.getElementById('val-north').textContent = `${state.nf}층 / ${state.wn} m`;
+
+      document.getElementById('slider-theta').value = state.theta;
+      const thText = state.theta === 0 ? '0° (정남향)' : (state.theta < 0 ? `${state.theta}° (남동향)` : `+${state.theta}° (남서향)`);
+      document.getElementById('val-theta').textContent = thText;
+
+      document.getElementById('val-loc').textContent = `${state.lat.toFixed(1)}°N / ${state.lon.toFixed(1)}°E`;
+      const regSel = document.getElementById('select-region');
+      for (const opt of regSel.options) {
+        const [olat, olon] = opt.value.split(',').map(Number);
+        if (Math.abs(olat - state.lat) < 0.05 && Math.abs(olon - state.lon) < 0.05) {
+          regSel.value = opt.value;
+          break;
+        }
+      }
+      document.getElementById('slider-winw').value = state.winW;
+      document.getElementById('val-winw').textContent = `${state.winW.toFixed(1)} m`;
+      document.getElementById('slider-winh').value = state.winH;
+      document.getElementById('val-winh').textContent = `${state.winH.toFixed(1)} m`;
+      document.getElementById('slider-winsill').value = state.winSill;
+      document.getElementById('val-winsill').textContent = `${state.winSill.toFixed(1)} m`;
+
+      const winCenterY = state.winSill + state.winH / 2;
+      document.getElementById('val-win-summary').textContent =
+        `${state.winW.toFixed(1)}×${state.winH.toFixed(1)}m · 중심 +${winCenterY.toFixed(2)}m`;
+      document.getElementById('disc-win-spec').textContent =
+        `창문 ${state.winW.toFixed(1)}×${state.winH.toFixed(1)}m(창대 ${state.winSill.toFixed(1)}m, 중심 +${winCenterY.toFixed(2)}m)`;
+
+      const isStd  = Math.abs(state.winW - 5.2) < 0.05 && Math.abs(state.winH - 1.8) < 0.05 && Math.abs(state.winSill - 0.9) < 0.05;
+      const isWide = Math.abs(state.winW - 6.8) < 0.05 && Math.abs(state.winH - 2.2) < 0.05 && Math.abs(state.winSill - 0.6) < 0.05;
+      const isHigh = Math.abs(state.winW - 5.2) < 0.05 && Math.abs(state.winH - 1.0) < 0.05 && Math.abs(state.winSill - 2.0) < 0.05;
+      document.querySelectorAll('#win-presets .seg-btn').forEach(b => {
+        const p = b.dataset.preset;
+        b.classList.toggle('active', (p === 'std' && isStd) || (p === 'wide' && isWide) || (p === 'high' && isHigh));
+      });
+      document.querySelectorAll('#wineval-group .seg-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.wineval === state.winEval);
+      });
+
+      document.getElementById('window-controls-box').style.display = state.mode === 'classroom' ? 'flex' : 'none';
+      document.getElementById('check-ex1').checked = state.ex1;
+      document.getElementById('row-ex1').style.display = state.mode === 'classroom' ? 'flex' : 'none';
+
+      document.querySelectorAll('#mode-group .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === state.mode));
+      document.querySelectorAll('#level-group .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.level === state.level));
+      document.querySelectorAll('#timemode-group .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.timemode === state.timeMode));
+      document.querySelectorAll('#theta-presets .seg-btn').forEach(b => b.classList.toggle('active', Number(b.dataset.th) === state.theta));
+    }
+
+    function fullUpdate() {
+      syncControlsUI();
+      runAnalysis();
+      rebuildSunArc();
+      rebuildCampus();
+      updateSunPosition();
+      updateDashboard();
+    }
+
+    // ---------- Raycasting Click Selection ----------
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    let pointerDownPos = { x: 0, y: 0 };
+
+    renderer.domElement.addEventListener('pointerdown', e => {
+      pointerDownPos = { x: e.clientX, y: e.clientY };
+    });
+
+    renderer.domElement.addEventListener('pointerup', e => {
+      const dx = e.clientX - pointerDownPos.x;
+      const dy = e.clientY - pointerDownPos.y;
+      if (Math.hypot(dx, dy) > 5) return; // Ignore drag
+
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(clickableMeshes);
+      if (hits.length > 0) {
+        const hitId = hits[0].object.userData.resultId;
+        if (hitId) {
+          state.selectedId = hitId;
+          rebuildCampus();
+          updateInspector();
+        }
+      }
+    });
+
+    // ---------- Event Listeners ----------
+    document.querySelectorAll('#mode-group .seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => { state.mode = btn.dataset.mode; fullUpdate(); });
+    });
+    document.querySelectorAll('#level-group .seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => { state.level = btn.dataset.level; fullUpdate(); });
+    });
+    document.querySelectorAll('#timemode-group .seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => { state.timeMode = btn.dataset.timemode; fullUpdate(); });
+    });
+    document.querySelectorAll('#theta-presets .seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => { state.theta = Number(btn.dataset.th); fullUpdate(); });
+    });
+
+    document.getElementById('select-region').addEventListener('change', e => {
+      const [lat, lon] = e.target.value.split(',').map(Number);
+      state.lat = lat;
+      state.lon = lon;
+      fullUpdate();
+    });
+
+    document.getElementById('slider-hs').addEventListener('input', e => { state.hs = parseFloat(e.target.value); fullUpdate(); });
+    document.getElementById('slider-d').addEventListener('input', e => { state.d = parseFloat(e.target.value); fullUpdate(); });
+    document.getElementById('slider-ws').addEventListener('input', e => { state.ws = parseFloat(e.target.value); fullUpdate(); });
+    document.getElementById('slider-nf').addEventListener('input', e => { state.nf = parseInt(e.target.value, 10); fullUpdate(); });
+    document.getElementById('slider-wn').addEventListener('input', e => { state.wn = parseFloat(e.target.value); fullUpdate(); });
+    document.getElementById('slider-theta').addEventListener('input', e => { state.theta = parseFloat(e.target.value); fullUpdate(); });
+    document.getElementById('check-ex1').addEventListener('change', e => { state.ex1 = e.target.checked; fullUpdate(); });
+
+    document.getElementById('slider-winw').addEventListener('input', e => {
+      state.winW = parseFloat(e.target.value);
+      enforceWindowBounds('winW');
+      fullUpdate();
+    });
+    document.getElementById('slider-winh').addEventListener('input', e => {
+      state.winH = parseFloat(e.target.value);
+      enforceWindowBounds('winH');
+      fullUpdate();
+    });
+    document.getElementById('slider-winsill').addEventListener('input', e => {
+      state.winSill = parseFloat(e.target.value);
+      enforceWindowBounds('winSill');
+      fullUpdate();
+    });
+    document.querySelectorAll('#win-presets .seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = btn.dataset.preset;
+        if (p === 'std')  { state.winW = 5.2; state.winH = 1.8; state.winSill = 0.9; }
+        if (p === 'wide') { state.winW = 6.8; state.winH = 2.2; state.winSill = 0.6; }
+        if (p === 'high') { state.winW = 5.2; state.winH = 1.0; state.winSill = 2.0; }
+        enforceWindowBounds('winH');
+        fullUpdate();
+      });
+    });
+    document.querySelectorAll('#wineval-group .seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.winEval = btn.dataset.wineval;
+        fullUpdate();
+      });
+    });
+
+    document.getElementById('slider-time').addEventListener('input', e => {
+      state.viewHour = parseFloat(e.target.value);
+      updateSunPosition();
+    });
+
+    document.getElementById('btn-play').addEventListener('click', () => {
+      state.playing = !state.playing;
+      document.getElementById('btn-play').textContent = state.playing ? '❚❚' : '▶';
+    });
+
+    document.getElementById('btn-toggle-room').addEventListener('click', () => {
+      if (!state.selectedId) return;
+      if (state.excludedIds.has(state.selectedId)) state.excludedIds.delete(state.selectedId);
+      else state.excludedIds.add(state.selectedId);
+      fullUpdate();
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      state.hs = 14.0; state.ws = 48.0; state.d = 22.0;
+      state.nf = 4; state.wn = 48.0; state.theta = 0;
+      state.winW = 5.2; state.winH = 1.8; state.winSill = 0.9; state.winEval = 'center';
+      state.ex1 = false; state.excludedIds.clear();
+      fullUpdate();
+      showToast('기본 배치 및 창문 조건으로 초기화되었습니다.');
+    });
+
+    // Camera Presets
+    document.getElementById('btn-cam-iso').addEventListener('click', () => {
+      camera.position.set(58, 46, 62);
+      controls.target.set(0, 6, 0);
+    });
+    document.getElementById('btn-cam-top').addEventListener('click', () => {
+      camera.position.set(0, 105, 0.1);
+      controls.target.set(0, 0, 0);
+    });
+    document.getElementById('btn-cam-side').addEventListener('click', () => {
+      camera.position.set(85, 16, 0);
+      controls.target.set(0, 8, 0);
+    });
+
+    // Share URL
+    document.getElementById('btn-share').addEventListener('click', async () => {
+      const url = buildShareURL();
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('현재 설정 조건이 담긴 공유 링크가 복사되었습니다.');
+      } catch {
+        window.prompt('아래 링크를 복사해 공유하세요:', url);
+      }
+    });
+
+    // Screenshot PNG
+    document.getElementById('btn-capture').addEventListener('click', () => {
+      renderer.render(scene, camera);
+      const a = document.createElement('a');
+      a.href = renderer.domElement.toDataURL('image/png');
+      a.download = `학교일조시뮬레이션_H${state.hs}_D${state.d}.png`;
+      a.click();
+      showToast('3D 시뮬레이션 화면이 PNG로 저장되었습니다.');
+    });
+
+    // Export CSV (UTF-8 BOM for Korean Excel)
+    document.getElementById('btn-csv').addEventListener('click', () => {
+      const rule = LEVEL_RULES[state.level];
+      const isRoom = state.mode === 'classroom';
+      const headers = isRoom
+        ? ['ID', '지점명', '창문규격(m)', '창대높이(m)', '창중심높이(m)', '측정방식', '총일조(시간)', `연속일조_${rule.refStart}~${rule.refEnd}시(시간)`, '판정결과']
+        : ['ID', '지점명', '총일조(시간)', `연속일조_${rule.refStart}~${rule.refEnd}시(시간)`, '판정결과'];
+      const evalLabel = state.winEval === 'center' ? '중심점' : '창면5점과반';
+      const rows = currentResults.map(r => isRoom
+        ? [
+            r.id,
+            r.label,
+            `${state.winW.toFixed(1)}x${state.winH.toFixed(1)}`,
+            state.winSill.toFixed(1),
+            r.winCenterY.toFixed(2),
+            evalLabel,
+            r.totalHrs.toFixed(2),
+            r.contHrs.toFixed(2),
+            r.excluded ? '비거실제외' : (r.pass ? '적합' : '미달')
+          ]
+        : [
+            r.id,
+            r.label,
+            r.totalHrs.toFixed(2),
+            r.contHrs.toFixed(2),
+            r.excluded ? '비거실제외' : (r.pass ? '적합' : '미달')
+          ]
+      );
+      const csv = '\uFEFF' + [headers, ...rows].map(row => row.join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      const winSuffix = isRoom ? `_W${state.winW.toFixed(1)}x${state.winH.toFixed(1)}` : '';
+      a.download = `일조분석결과_${state.mode}_H${state.hs}_D${state.d}${winSuffix}.csv`;
+      a.click();
+      showToast('분석 결과 CSV 파일이 다운로드되었습니다.');
+    });
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => t.classList.remove('show'), 2600);
+    }
+
+    // ---------- Resize & Animation Loop ----------
+    function onResize() {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      if (w === 0 || h === 0) return;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+    window.addEventListener('resize', onResize);
+
+    let lastTime = performance.now();
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = (now - lastTime) / 1000;
+      lastTime = now;
+
+      if (state.playing) {
+        state.viewHour += dt * 0.9;
+        if (state.viewHour > 16.0) state.viewHour = 8.0;
+        document.getElementById('slider-time').value = state.viewHour;
+        updateSunPosition();
+      }
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    // ---------- Init ----------
+    loadFromURL();
+    onResize();
+    fullUpdate();
+    animate(performance.now());
+  </script>
+</body>
+</html>
