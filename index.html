@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
   <title>학교 일조·인동거리 3D 시뮬레이터 (현행 교육환경보호법 기준)</title>
   <style>
     :root {
@@ -183,25 +183,53 @@
       color: var(--muted);
     }
 
+    /* 3D Canvas Stage Wrapper */
+    .canvas-stage {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
     /* 3D Canvas Container */
     #canvas-container {
       flex: 1;
       position: relative;
       min-height: 0;
       cursor: grab;
+      touch-action: none;
+    }
+    #canvas-container canvas {
+      display: block;
+      touch-action: none;
     }
     #canvas-container:active { cursor: grabbing; }
 
     /* Legend & View Reset */
     .viewport-tools {
       position: absolute;
-      bottom: 84px;
+      bottom: 10px;
       left: 12px;
+      right: 12px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
       flex-wrap: wrap;
+      pointer-events: none;
       z-index: 5;
+    }
+    .viewport-tools > * {
+      pointer-events: auto;
+    }
+    .cam-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mobile-only {
+      display: none;
     }
 
     .legend-pill {
@@ -300,8 +328,47 @@
       border-left: 1px solid var(--border);
       display: flex;
       flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .mobile-tab-bar {
+      display: none;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      padding: 6px 8px;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .mobile-tab-btn {
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 7px 4px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      position: relative;
+    }
+    .mobile-tab-btn.active {
+      background: #ffffff;
+      color: var(--primary);
+      border-color: #cbd5e1;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+
+    .aside-scroll {
+      flex: 1;
+      min-height: 0;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       padding: 14px;
+      display: flex;
+      flex-direction: column;
       gap: 14px;
     }
 
@@ -661,12 +728,275 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    /* Responsive */
+    .timeline-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    /* Responsive Mobile App Layout */
     @media (max-width: 920px) {
-      body { height: auto; overflow: auto; }
-      .workspace { flex-direction: column; overflow: visible; }
-      .viewport-col { height: 62vh; min-height: 420px; }
-      aside { width: 100%; border-left: none; border-top: 1px solid var(--border); overflow: visible; }
+      body {
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
+
+      header {
+        padding: 7px 10px;
+        gap: 6px;
+      }
+      .brand {
+        min-width: 0;
+        flex: 1;
+      }
+      .brand-title {
+        font-size: 13.5px;
+        gap: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .brand-title-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .badge-law-full,
+      .brand-sub,
+      .btn-label-full,
+      .legend-word-full {
+        display: none;
+      }
+      .badge-law {
+        font-size: 10px;
+        padding: 1px 6px;
+        flex-shrink: 0;
+      }
+      .header-actions {
+        gap: 4px;
+        flex-wrap: nowrap;
+        flex-shrink: 0;
+      }
+      .header-actions .btn {
+        padding: 5px 7px;
+        font-size: 11px;
+        gap: 3px;
+        white-space: nowrap;
+      }
+
+      .workspace {
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .viewport-col {
+        flex: 0 0 46%;
+        min-height: 250px;
+        max-height: 54%;
+        transition: flex-basis 0.2s ease, max-height 0.2s ease;
+      }
+      .viewport-col.expanded {
+        flex: 0 0 76%;
+        max-height: 82%;
+      }
+
+      /* KPI bar moves OUT of 3D canvas into crisp top 4-col summary strip */
+      .kpi-overlay {
+        position: static;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 4px;
+        padding: 5px 8px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .kpi-card {
+        min-width: 0;
+        padding: 5px 6px;
+        border-radius: 7px;
+        box-shadow: none;
+        gap: 1px;
+      }
+      .kpi-label {
+        font-size: 9.5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .kpi-value {
+        font-size: 12.5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .kpi-sub {
+        display: none;
+      }
+
+      /* Single-row sleek 3D viewport tools */
+      .viewport-tools {
+        bottom: 6px;
+        left: 6px;
+        right: 6px;
+        flex-wrap: nowrap;
+        gap: 4px;
+      }
+      .legend-pill {
+        padding: 4px 7px;
+        gap: 6px;
+        font-size: 10px;
+        white-space: nowrap;
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        margin-right: 2px;
+      }
+      .cam-btn-group {
+        gap: 4px;
+      }
+      .cam-btn-group .btn {
+        padding: 4px 7px;
+        font-size: 10.5px;
+        background: rgba(255, 255, 255, 0.94);
+        white-space: nowrap;
+      }
+      .mobile-only {
+        display: inline-flex;
+      }
+
+      /* Compact 2-row Timeline Bar */
+      .timeline-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 5px;
+        padding: 7px 10px 6px;
+      }
+      .timeline-head {
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .play-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+      }
+      .time-readout {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        flex: 1;
+        min-width: 0;
+        gap: 8px;
+      }
+      .time-main {
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .time-sun {
+        font-size: 10.5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tick-minor {
+        display: none;
+      }
+      .time-ticks {
+        font-size: 10px;
+      }
+
+      /* Bottom Tabbed Control Sheet */
+      aside {
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        border-left: none;
+        border-top: 1px solid var(--border);
+      }
+      .mobile-tab-bar {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .aside-scroll {
+        padding: 10px 10px calc(18px + env(safe-area-inset-bottom, 0px));
+        gap: 10px;
+      }
+      .aside-scroll [data-mobile-tab] {
+        display: none;
+      }
+      .aside-scroll [data-mobile-tab].mobile-tab-active {
+        display: flex;
+      }
+      .aside-scroll .disclaimer[data-mobile-tab].mobile-tab-active {
+        display: block;
+      }
+
+      /* Touch-friendly controls & prevent iOS Safari input auto-zoom */
+      input[type="range"] {
+        height: 24px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+      }
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 5px;
+        background: #cbd5e1;
+        border-radius: 999px;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--primary);
+        border: 2px solid #ffffff;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.28);
+        margin-top: -8.5px;
+      }
+      input[type="range"]::-moz-range-track {
+        height: 5px;
+        background: #cbd5e1;
+        border-radius: 999px;
+      }
+      input[type="range"]::-moz-range-thumb {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--primary);
+        border: 2px solid #ffffff;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.28);
+      }
+
+      .inline-num-input,
+      .floor-input,
+      select {
+        font-size: 16px;
+        padding: 4px 6px;
+      }
+      .inline-num-input {
+        width: 74px;
+      }
+      .floor-input {
+        width: 62px;
+      }
+      .mini-chip {
+        padding: 4px 8px;
+        font-size: 11px;
+      }
+      .seg-btn {
+        padding: 8px 6px;
+        font-size: 12px;
+      }
+      .toggle-row {
+        padding: 9px 10px;
+      }
+      .toggle-row input {
+        width: 18px;
+        height: 18px;
+      }
     }
   </style>
 
@@ -683,69 +1013,76 @@
   <header>
     <div class="brand">
       <div class="brand-title">
-        <span>학교 교사동 3D 일조·인동거리 시뮬레이터</span>
-        <span class="badge-law">v5 · D~500m / H~300m</span>
-        <span class="badge-law">교육부고시 제2019-176호</span>
+        <span class="brand-title-text">학교 3D 일조 시뮬레이터</span>
+        <span class="badge-law">v6<span class="badge-law-full"> · 모바일 최적화</span></span>
+        <span class="badge-law badge-law-full">교육부고시 제2019-176호</span>
       </div>
       <div class="brand-sub">동짓날(12/22) 08:00~16:00 3차원 광선 교차 판정 · 개별 창문 / 옥외 체육장(3m 후퇴·10m 격자)</div>
     </div>
     <div class="header-actions">
-      <button class="btn" id="btn-share" title="현재 설정 조건이 포함된 웹 주소 복사">🔗 설정 링크 복사</button>
-      <button class="btn" id="btn-csv" title="전체 창문 또는 격자별 일조 판정 결과 CSV 저장">📊 결과 CSV</button>
-      <button class="btn btn-primary" id="btn-capture" title="현재 3D 시뮬레이션 화면 PNG 저장">📷 화면 캡처</button>
+      <button class="btn" id="btn-share" title="현재 설정 조건이 포함된 웹 주소 복사">🔗 <span class="btn-label-full">설정 </span>링크<span class="btn-label-full"> 복사</span></button>
+      <button class="btn" id="btn-csv" title="전체 창문 또는 격자별 일조 판정 결과 CSV 저장">📊 <span class="btn-label-full">결과 </span>CSV</button>
+      <button class="btn btn-primary" id="btn-capture" title="현재 3D 시뮬레이션 화면 PNG 저장">📷 <span class="btn-label-full">화면 </span>캡처</button>
     </div>
   </header>
 
   <div class="workspace">
     <!-- Left 3D Viewport -->
-    <div class="viewport-col">
+    <div class="viewport-col" id="viewport-col">
       <div class="kpi-overlay">
         <div class="kpi-card" id="kpi-status-card">
-          <span class="kpi-label">법정 기준 종합 판정</span>
+          <span class="kpi-label">종합 판정</span>
           <span class="kpi-value" id="kpi-verdict">-</span>
           <span class="kpi-sub" id="kpi-rule-desc">총 4h 또는 09~13시 연속 2h</span>
         </div>
         <div class="kpi-card">
-          <span class="kpi-label">충족률 (충족 / 대상)</span>
+          <span class="kpi-label">충족률</span>
           <span class="kpi-value" id="kpi-rate">-</span>
           <span class="kpi-sub" id="kpi-counts">-</span>
         </div>
         <div class="kpi-card">
-          <span class="kpi-label">현재 인동비 (D / H)</span>
+          <span class="kpi-label">인동비 (D/H)</span>
           <span class="kpi-value" id="kpi-ratio">-</span>
           <span class="kpi-sub" id="kpi-dh-detail">-</span>
         </div>
         <div class="kpi-card">
-          <span class="kpi-label">최저 일조 지점</span>
+          <span class="kpi-label">최저 일조</span>
           <span class="kpi-value" id="kpi-worst">-</span>
           <span class="kpi-sub" id="kpi-worst-label">-</span>
         </div>
       </div>
 
-      <div id="canvas-container"></div>
+      <div class="canvas-stage">
+        <div id="canvas-container"></div>
 
-      <div class="viewport-tools">
-        <div class="legend-pill">
-          <span><i class="dot" style="background:#10b981;"></i>법정 충족</span>
-          <span><i class="dot" style="background:#ef4444;"></i>일조 미달</span>
-          <span><i class="dot" style="background:#94a3b8;"></i>비거실 제외</span>
+        <div class="viewport-tools">
+          <div class="legend-pill">
+            <span><i class="dot" style="background:#10b981;"></i><span class="legend-word-full">법정 </span>충족</span>
+            <span><i class="dot" style="background:#ef4444;"></i><span class="legend-word-full">일조 </span>미달</span>
+            <span><i class="dot" style="background:#94a3b8;"></i><span class="legend-word-full">비거실 </span>제외</span>
+          </div>
+          <div class="cam-btn-group">
+            <button class="btn" id="btn-cam-iso">등각<span class="btn-label-full">뷰</span></button>
+            <button class="btn" id="btn-cam-top">평면<span class="btn-label-full">뷰</span></button>
+            <button class="btn" id="btn-cam-side">단면<span class="btn-label-full">뷰</span></button>
+            <button class="btn mobile-only" id="btn-expand-3d" title="3D 화면 크게 보기">⤢ 확대</button>
+          </div>
         </div>
-        <button class="btn" id="btn-cam-iso">등각뷰</button>
-        <button class="btn" id="btn-cam-top">평면뷰</button>
-        <button class="btn" id="btn-cam-side">단면뷰</button>
       </div>
 
       <div class="timeline-bar">
-        <button class="play-btn" id="btn-play" title="재생 / 일시정지">▶</button>
-        <div class="time-readout">
-          <div class="time-main" id="time-display">12:00</div>
-          <div class="time-sun" id="sun-info">고도 29.1° · 방위 정남</div>
+        <div class="timeline-head">
+          <button class="play-btn" id="btn-play" title="재생 / 일시정지">▶</button>
+          <div class="time-readout">
+            <div class="time-main" id="time-display">12:00</div>
+            <div class="time-sun" id="sun-info">고도 29.1° · 방위 정남</div>
+          </div>
         </div>
         <div class="slider-wrap">
           <input type="range" id="slider-time" min="8" max="16" step="0.05" value="12" />
           <div class="time-ticks">
-            <span>08:00</span><span>09:00</span><span>10:00</span><span>11:00</span>
-            <span>12:00</span><span>13:00</span><span>14:00</span><span>15:00</span><span>16:00</span>
+            <span>08:00</span><span class="tick-minor">09:00</span><span>10:00</span><span class="tick-minor">11:00</span>
+            <span>12:00</span><span class="tick-minor">13:00</span><span>14:00</span><span class="tick-minor">15:00</span><span>16:00</span>
           </div>
         </div>
       </div>
@@ -753,8 +1090,16 @@
 
     <!-- Right Control Sidebar -->
     <aside>
+      <div class="mobile-tab-bar" id="mobile-tab-bar">
+        <button class="mobile-tab-btn active" data-tab="layout">배치·남측</button>
+        <button class="mobile-tab-btn" data-tab="north">북측·창문</button>
+        <button class="mobile-tab-btn" data-tab="rules">기준·지역</button>
+        <button class="mobile-tab-btn" data-tab="inspect">선택상세</button>
+      </div>
+
+      <div class="aside-scroll" id="aside-scroll">
       <!-- Mode & School Level -->
-      <div class="section">
+      <div class="section" data-mobile-tab="rules">
         <div class="section-title">
           <span>1. 분석 대상 및 학교급 기준</span>
         </div>
@@ -788,10 +1133,10 @@
         </div>
       </div>
 
-      <!-- Geometry Parameters -->
-      <div class="section">
+      <!-- Geometry Parameters: Layout & South Building -->
+      <div class="section mobile-tab-active" data-mobile-tab="layout">
         <div class="section-title">
-          <span>2. 교사동 규모 및 배치</span>
+          <span>2. 배치 및 남측 건물 (음영 유발)</span>
           <button class="btn" id="btn-reset" style="padding:2px 7px; font-size:11px;">초기화</button>
         </div>
 
@@ -921,6 +1266,14 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- North Building & Window Config -->
+      <div class="section" data-mobile-tab="north">
+        <div class="section-title">
+          <span>3. 북측 교사동 및 창문 설정</span>
+        </div>
+
         <!-- North Building Floor & Height Config -->
         <div class="sub-box">
           <div class="sub-box-header">
@@ -1004,9 +1357,9 @@
       </div>
 
       <!-- Inspector -->
-      <div class="section">
+      <div class="section" data-mobile-tab="inspect">
         <div class="section-title">
-          <span>3. 선택 지점 상세 분석</span>
+          <span>4. 선택 지점 상세 분석</span>
           <span style="font-size:10.5px; color:var(--muted); font-weight:500;">3D 창문·격자 클릭</span>
         </div>
         <div class="inspector-box" id="inspector-box">
@@ -1037,10 +1390,11 @@
         </div>
       </div>
 
-      <div class="disclaimer">
+      <div class="disclaimer" data-mobile-tab="rules">
         <strong>법적 근거 및 유의사항</strong><br/>
         • 「교육환경 보호에 관한 법률」 시행규칙 [별표 1] 및 「교육환경평가서 작성 등에 관한 고시」(교육부고시 제2019-176호) [별표 2] 기준을 반영한 사전 개략 검토 도구입니다.<br/>
         • <span id="disc-bldg-spec">남측 4층(14.0m) · 북측 4층(14.0m)</span>, <span id="disc-win-spec">창문 5.2×1.8m(창대 0.9m, 중심 +1.80m)</span>, 북측 동 깊이 12m 기준이며, 실제 교육환경평가 심의 시에는 주변 건축물·지형 고저차·실제 입면 개구부를 반영한 정밀 3D 해석이 필요합니다.
+      </div>
       </div>
     </aside>
   </div>
@@ -1559,6 +1913,10 @@
     controls.minDistance = 20;
     controls.maxDistance = 3200;
     controls.target.set(0, 6, 0);
+    controls.touches = {
+      ONE: THREE.TOUCH.ROTATE,
+      TWO: THREE.TOUCH.DOLLY_PAN
+    };
 
     // Lighting
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcbd5e1, 0.65);
@@ -1990,7 +2348,7 @@
       const statusCard = document.getElementById('kpi-status-card');
       statusCard.className = 'kpi-card ' + (allPass ? 'status-pass' : 'status-fail');
       document.getElementById('kpi-verdict').textContent =
-        totalCount === 0 ? '대상 없음' : (allPass ? '전 지점 적합' : `기준 미달 (${failCount}곳)`);
+        totalCount === 0 ? '대상 없음' : (allPass ? '전체 적합' : `미달 (${failCount}곳)`);
       document.getElementById('kpi-rule-desc').textContent = state.mode === 'classroom'
         ? `총 4h 또는 ${rule.refStart}~${rule.refEnd}시 연속 2h`
         : `총 2h 또는 ${rule.refStart}~${rule.refEnd}시 연속 1h`;
@@ -2011,7 +2369,7 @@
             worst = item;
           }
         });
-        document.getElementById('kpi-worst').textContent = `총 ${worst.totalHrs.toFixed(2)}h`;
+        document.getElementById('kpi-worst').textContent = `${worst.totalHrs.toFixed(2)}h`;
         document.getElementById('kpi-worst-label').textContent = `${worst.label} (연속 ${worst.contHrs.toFixed(2)}h)`;
       } else {
         document.getElementById('kpi-worst').textContent = '-';
@@ -2269,10 +2627,36 @@
       pointerDownPos = { x: e.clientX, y: e.clientY };
     });
 
+    function switchMobileTab(tabName) {
+      document.querySelectorAll('#mobile-tab-bar .mobile-tab-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === tabName);
+      });
+      document.querySelectorAll('#aside-scroll [data-mobile-tab]').forEach(el => {
+        el.classList.toggle('mobile-tab-active', el.dataset.mobileTab === tabName);
+      });
+      document.getElementById('aside-scroll').scrollTop = 0;
+    }
+
+    document.querySelectorAll('#mobile-tab-bar .mobile-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchMobileTab(btn.dataset.tab);
+      });
+    });
+
+    // Mobile 3D Expand / Collapse toggle
+    const btnExpand3D = document.getElementById('btn-expand-3d');
+    const viewportCol = document.getElementById('viewport-col');
+    btnExpand3D.addEventListener('click', () => {
+      const expanded = viewportCol.classList.toggle('expanded');
+      btnExpand3D.textContent = expanded ? '⤡ 축소' : '⤢ 확대';
+      setTimeout(onResize, 220);
+    });
+
     renderer.domElement.addEventListener('pointerup', e => {
       const dx = e.clientX - pointerDownPos.x;
       const dy = e.clientY - pointerDownPos.y;
-      if (Math.hypot(dx, dy) > 5) return; // Ignore drag
+      const tapThreshold = e.pointerType === 'touch' ? 12 : 5;
+      if (Math.hypot(dx, dy) > tapThreshold) return; // Ignore drag
 
       const rect = renderer.domElement.getBoundingClientRect();
       pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
@@ -2286,6 +2670,11 @@
           state.selectedId = hitId;
           rebuildCampus();
           updateInspector();
+          if (window.innerWidth <= 920) {
+            switchMobileTab('inspect');
+            const hitItem = currentResults.find(r => r.id === hitId);
+            if (hitItem) showToast(`${hitItem.label} 선택됨`);
+          }
         }
       }
     });
@@ -2607,6 +2996,9 @@
       renderer.setSize(w, h);
     }
     window.addEventListener('resize', onResize);
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(() => onResize()).observe(container);
+    }
 
     let lastTime = performance.now();
     function animate(now) {
